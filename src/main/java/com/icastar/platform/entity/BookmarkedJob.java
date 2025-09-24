@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 public class BookmarkedJob extends BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment primary key
+    private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_post_id", nullable = false)
     private JobPost jobPost;

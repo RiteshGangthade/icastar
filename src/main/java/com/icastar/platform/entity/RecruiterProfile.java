@@ -12,6 +12,10 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class RecruiterProfile extends BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment primary key
+    private Long id;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

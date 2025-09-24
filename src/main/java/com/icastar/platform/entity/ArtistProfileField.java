@@ -10,6 +10,11 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class ArtistProfileField extends BaseEntity {
 
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_profile_id", nullable = false)
     private ArtistProfile artistProfile;
@@ -22,10 +27,10 @@ public class ArtistProfileField extends BaseEntity {
     private String fieldValue;
 
     @Column(name = "file_url")
-    private String fileUrl; // For file type fields
+    private String fileUrl;
 
     @Column(name = "file_name")
-    private String fileName; // Original file name
+    private String fileName;
 
     @Column(name = "file_size")
     private Long fileSize; // File size in bytes

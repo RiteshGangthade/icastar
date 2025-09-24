@@ -244,7 +244,7 @@ public class AuthController {
 
     // Email-based authentication endpoints (without OTP verification)
 
-    @PostMapping("/email/login")
+    @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> emailLogin(@Valid @RequestBody EmailLoginRequestDto request) {
         try {
             // Find user by email

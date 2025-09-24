@@ -14,7 +14,6 @@ public interface ArtistProfileFieldRepository extends JpaRepository<ArtistProfil
 
     List<ArtistProfileField> findByArtistProfileId(Long artistProfileId);
 
-    Optional<ArtistProfileField> findByArtistProfileIdAndArtistTypeFieldId(Long artistProfileId, Long artistTypeFieldId);
 
     @Query("SELECT apf FROM ArtistProfileField apf WHERE apf.artistProfile.id = :artistProfileId AND apf.artistTypeField.isSearchable = true")
     List<ArtistProfileField> findSearchableFieldsByArtistProfile(@Param("artistProfileId") Long artistProfileId);

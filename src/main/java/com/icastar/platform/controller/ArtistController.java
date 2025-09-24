@@ -1,5 +1,6 @@
 package com.icastar.platform.controller;
 
+import com.icastar.platform.dto.ArtistProfileFieldDto;
 import com.icastar.platform.dto.artist.CreateArtistProfileDto;
 import com.icastar.platform.entity.ArtistProfile;
 import com.icastar.platform.entity.User;
@@ -9,19 +10,18 @@ import com.icastar.platform.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.print.Pageable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/artists")
+@RequestMapping("/artists")
 @RequiredArgsConstructor
 @Slf4j
 public class ArtistController {
@@ -88,10 +88,19 @@ public class ArtistController {
 
             artistService.save(artistProfile);
 
+            // Handle dynamic fields if provided
+            if (createDto.getDynamicFields() != null && !createDto.getDynamicFields().isEmpty()) {
+                artistService.saveDynamicFields(artistProfile.getId(), createDto.getDynamicFields());
+            }
+
+            // Get dynamic fields for the response
+            List<ArtistProfileFieldDto> dynamicFields = artistService.getDynamicFields(artistProfile.getId());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Artist profile created successfully");
             response.put("data", artistProfile);
+            response.put("dynamicFields", dynamicFields);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -116,9 +125,13 @@ public class ArtistController {
             ArtistProfile artistProfile = artistService.findByUserId(user.getId())
                     .orElseThrow(() -> new RuntimeException("Artist profile not found"));
 
+            // Get dynamic fields for the response
+            List<ArtistProfileFieldDto> dynamicFields = artistService.getDynamicFields(artistProfile.getId());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", artistProfile);
+            response.put("dynamicFields", dynamicFields);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -137,9 +150,13 @@ public class ArtistController {
             ArtistProfile artistProfile = artistService.findById(id)
                     .orElseThrow(() -> new RuntimeException("Artist profile not found"));
 
+            // Get dynamic fields for the response
+            List<ArtistProfileFieldDto> dynamicFields = artistService.getDynamicFields(artistProfile.getId());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", artistProfile);
+            response.put("dynamicFields", dynamicFields);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -181,10 +198,18 @@ public class ArtistController {
 
             ArtistProfile savedProfile = artistService.updateArtistProfile(existingProfile.getId(), updatedProfile);
 
+            // Handle dynamic fields if provided
+            if (updateDto.getDynamicFields() != null && !updateDto.getDynamicFields().isEmpty()) {
+                artistService.saveDynamicFields(existingProfile.getId(), updateDto.getDynamicFields());
+            }
+
+            List<ArtistProfileFieldDto> dynamicFields = artistService.getDynamicFields(existingProfile.getId());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Artist profile updated successfully");
             response.put("data", savedProfile);
+            response.put("dynamicFields", dynamicFields);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

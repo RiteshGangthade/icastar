@@ -14,6 +14,11 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class JobPost extends BaseEntity {
 
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment primary key
+    private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruiter_id", nullable = false)
     private RecruiterProfile recruiter;

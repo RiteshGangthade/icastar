@@ -1,5 +1,6 @@
 package com.icastar.platform.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -12,8 +13,13 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class ArtistTypeField extends BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_type_id", nullable = false)
+    @JsonIgnore
     private ArtistType artistType;
 
     @Column(name = "field_name", nullable = false)
@@ -36,10 +42,10 @@ public class ArtistTypeField extends BaseEntity {
     private Integer sortOrder = 0;
 
     @Column(name = "validation_rules", columnDefinition = "JSON")
-    private String validationRules; // JSON for validation rules
+    private String validationRules;
 
     @Column(name = "options", columnDefinition = "JSON")
-    private String options; // JSON for dropdown/checkbox options
+    private String options;
 
     @Column(name = "placeholder")
     private String placeholder;

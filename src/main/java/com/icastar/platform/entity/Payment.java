@@ -13,6 +13,11 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 public class Payment extends BaseEntity {
 
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment primary key
+    private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

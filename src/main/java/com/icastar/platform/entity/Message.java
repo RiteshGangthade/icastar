@@ -12,6 +12,11 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 public class Message extends BaseEntity {
 
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment primary key
+    private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;

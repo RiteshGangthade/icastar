@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 public class Otp extends BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment primary key
+    private Long id;
+
     @Column(name = "mobile", nullable = false)
     private String mobile;
 

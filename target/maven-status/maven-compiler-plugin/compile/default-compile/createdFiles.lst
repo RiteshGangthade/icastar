@@ -31,6 +31,7 @@ com/icastar/platform/entity/ArtistTypeField.class
 com/icastar/platform/entity/AuditLog.class
 com/icastar/platform/controller/PublicArtistTypeController.class
 com/icastar/platform/dto/user/UpdateUserStatusDto.class
+com/icastar/platform/config/SecurityConfig.class
 com/icastar/platform/dto/job/CreateJobPostDto.class
 com/icastar/platform/entity/Payment.class
 com/icastar/platform/entity/User.class

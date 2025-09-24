@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
-// @Component
+@Component
 @RequiredArgsConstructor
 @Slf4j
 public class ArtistTypeDataInitializer implements CommandLineRunner {
@@ -118,7 +118,12 @@ public class ArtistTypeDataInitializer implements CommandLineRunner {
             createField(dancer, "choreography_skills", "Choreography Skills", FieldType.BOOLEAN, false, true, 4, null, "Can you create choreography?"),
             createField(dancer, "teaching_experience", "Teaching Experience", FieldType.BOOLEAN, false, true, 5, null, "Do you have teaching experience?"),
             createField(dancer, "performance_videos", "Performance Videos", FieldType.FILE, true, false, 6, null, "Videos of your performances"),
-            createField(dancer, "costume_availability", "Costume Availability", FieldType.BOOLEAN, false, false, 7, null, "Do you have your own costumes?")
+            createField(dancer, "costume_availability", "Costume Availability", FieldType.BOOLEAN, false, false, 7, null, "Do you have your own costumes?"),
+            createField(dancer, "flexibility_level", "Flexibility Level", FieldType.SELECT, false, true, 8, null, "What is your current flexibility level?"),
+            createField(dancer, "performance_types", "Performance Types", FieldType.MULTI_SELECT, false, true, 9, null, "What types of performances have you done?"),
+            createField(dancer, "awards_recognition", "Awards & Recognition", FieldType.TEXTAREA, false, false, 10, null, "Awards and recognitions received"),
+            createField(dancer, "availability", "Availability", FieldType.SELECT, false, true, 11, null, "What is your general availability?"),
+            createField(dancer, "travel_willingness", "Travel Willingness", FieldType.SELECT, false, true, 12, null, "How far are you willing to travel?")
         );
         artistTypeFieldRepository.saveAll(fields);
     }

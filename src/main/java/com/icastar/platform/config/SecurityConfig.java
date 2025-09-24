@@ -43,6 +43,7 @@ public class SecurityConfig {
                         // ==> These servlet paths are public (context path `/api` is handled by Tomcat)
                         .requestMatchers(
                                 "/auth/register",
+                                "/auth/email/login",
                                 "/auth/login",
                                 "/public/**",
                                 "/swagger-ui/**",

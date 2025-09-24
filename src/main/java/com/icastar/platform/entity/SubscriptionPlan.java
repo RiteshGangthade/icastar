@@ -13,6 +13,10 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class SubscriptionPlan extends BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment primary key
+    private Long id;
+
     @Column(name = "name", nullable = false)
     private String name;
 

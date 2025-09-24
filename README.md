@@ -77,7 +77,7 @@ src/main/java/com/icastar/platform/
 - MySQL 8.0+
 - Maven 3.6+
 
-### Installation
+### Quick Setup
 
 1. **Clone the repository**
    ```bash
@@ -87,31 +87,33 @@ src/main/java/com/icastar/platform/
 
 2. **Database Setup**
    ```bash
-   # Create database
+   # Create database and schema
    mysql -u root -p
    CREATE DATABASE icastar_db;
+   USE icastar_db;
+   source database-schema.sql;
    
-   # Run schema
-   mysql -u root -p icastar_db < database-schema.sql
+   # Add Dancer default data (optional)
+   ./setup-dancer-data.sh
    ```
 
-3. **Configuration**
-   ```bash
-   # Copy and update application properties
-   cp src/main/resources/application.yml.example src/main/resources/application.yml
-   
-   # Update database credentials and other settings
-   ```
-
-4. **Run the application**
+3. **Run the application**
    ```bash
    mvn spring-boot:run
    ```
 
-5. **Access the application**
+4. **Access the application**
    - API Base URL: `http://localhost:8080/api`
    - Admin Panel: `http://localhost:8080/api/admin`
-   - API Documentation: See `API-DOCUMENTATION.md`
+   - H2 Console (dev): `http://localhost:8080/api/h2-console`
+
+### 📚 Comprehensive Documentation
+
+- **[ARTIST-ONBOARDING-GUIDE.md](ARTIST-ONBOARDING-GUIDE.md)** - Complete step-by-step guide for adding artists
+- **[ADDING-NEW-ARTIST-TYPES-GUIDE.md](ADDING-NEW-ARTIST-TYPES-GUIDE.md)** - How to add new artist types dynamically
+- **[DATABASE-SETUP-GUIDE.md](DATABASE-SETUP-GUIDE.md)** - Detailed database setup with sample data
+- **[API-DOCUMENTATION.md](API-DOCUMENTATION.md)** - Complete API reference
+- **[DEVELOPMENT-GUIDE.md](DEVELOPMENT-GUIDE.md)** - Development setup and guidelines
 
 ## 📊 Database Schema
 
@@ -139,7 +141,7 @@ src/main/java/com/icastar/platform/
 
 ## 🎨 Artist Types & Fields
 
-The platform supports the following artist types with their specific fields:
+The platform supports the following artist types with their specific fields. **Dancer type is fully configured with sample data** - see [DATABASE-SETUP-GUIDE.md](DATABASE-SETUP-GUIDE.md) for details.
 
 ### 🎬 Actor
 - Height, Weight, Body Type
@@ -147,11 +149,11 @@ The platform supports the following artist types with their specific fields:
 - Languages, Acting Experience
 - Special Skills, Demo Reel, Headshots
 
-### 💃 Dancer
-- Dance Styles, Training Background
-- Performance Experience, Choreography Skills
-- Teaching Experience, Performance Videos
-- Costume Availability
+### 💃 Dancer ⭐ (Fully Configured)
+- **Required**: Dance Styles, Training Background, Performance Experience, Performance Videos
+- **Optional**: Choreography Skills, Teaching Experience, Flexibility Level, Performance Types
+- **Additional**: Awards & Recognition, Availability, Travel Willingness, Costume Availability
+- **Sample Data**: 2 test profiles with complete field values
 
 ### 🎤 Singer
 - Vocal Range, Music Genres

@@ -1,10 +1,15 @@
 package com.icastar.platform.service;
 
+import com.icastar.platform.dto.ArtistProfileFieldDto;
 import com.icastar.platform.dto.user.UpdateUserProfileDto;
 import com.icastar.platform.entity.ArtistProfile;
+import com.icastar.platform.entity.ArtistProfileField;
 import com.icastar.platform.entity.ArtistType;
+import com.icastar.platform.entity.ArtistTypeField;
 import com.icastar.platform.entity.User;
+import com.icastar.platform.repository.ArtistProfileFieldRepository;
 import com.icastar.platform.repository.ArtistProfileRepository;
+import com.icastar.platform.repository.ArtistTypeFieldRepository;
 import com.icastar.platform.repository.ArtistTypeRepository;
 import com.icastar.platform.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +31,8 @@ public class ArtistService {
     private final ArtistProfileRepository artistProfileRepository;
     private final ArtistTypeRepository artistTypeRepository;
     private final UserRepository userRepository;
+    private final ArtistProfileFieldRepository artistProfileFieldRepository;
+    private final ArtistTypeFieldRepository artistTypeFieldRepository;
 
     @Transactional(readOnly = true)
     public Optional<ArtistProfile> findById(Long id) {
@@ -224,5 +231,70 @@ public class ArtistService {
             return findActiveArtistsByType(artistTypeId);
         }
         return findActiveArtists();
+    }
+
+    /**
+     * Save dynamic fields for an artist profile
+     * @param artistProfileId The ID of the artist profile
+     * @param dynamicFields List of dynamic field data
+     */
+    public void saveDynamicFields(Long artistProfileId, List<ArtistProfileFieldDto> dynamicFields) {
+        ArtistProfile artistProfile = artistProfileRepository.findById(artistProfileId)
+                .orElseThrow(() -> new RuntimeException("Artist profile not found"));
+
+        // Delete existing dynamic fields for this profile
+        List<ArtistProfileField> existingFields = artistProfileFieldRepository.findByArtistProfileId(artistProfileId);
+        artistProfileFieldRepository.deleteAll(existingFields);
+
+        // Save new dynamic fields
+        for (ArtistProfileFieldDto fieldDto : dynamicFields) {
+            if (fieldDto.getFieldValue() != null && !fieldDto.getFieldValue().trim().isEmpty()) {
+                ArtistTypeField artistTypeField = artistTypeFieldRepository.findById(fieldDto.getArtistTypeFieldId())
+                        .orElseThrow(() -> new RuntimeException("Artist type field not found with id: " + fieldDto.getArtistTypeFieldId()));
+
+                ArtistProfileField profileField = new ArtistProfileField();
+                profileField.setArtistProfile(artistProfile);
+                profileField.setArtistTypeField(artistTypeField);
+                profileField.setFieldValue(fieldDto.getFieldValue());
+                
+                // Handle file fields
+                if (fieldDto.getFileUrl() != null) {
+                    profileField.setFileUrl(fieldDto.getFileUrl());
+                    profileField.setFileName(fieldDto.getFileName());
+                    profileField.setFileSize(fieldDto.getFileSize());
+                    profileField.setMimeType(fieldDto.getMimeType());
+                }
+
+                artistProfileFieldRepository.save(profileField);
+                log.info("Saved dynamic field '{}' for artist profile {}", artistTypeField.getFieldName(), artistProfileId);
+            }
+        }
+    }
+
+    /**
+     * Get dynamic fields for an artist profile
+     * @param artistProfileId The ID of the artist profile
+     * @return List of dynamic field data
+     */
+    @Transactional(readOnly = true)
+    public List<ArtistProfileFieldDto> getDynamicFields(Long artistProfileId) {
+        List<ArtistProfileField> fields = artistProfileFieldRepository.findByArtistProfileId(artistProfileId);
+        return fields.stream()
+                .map(this::convertToFieldDto)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    private ArtistProfileFieldDto convertToFieldDto(ArtistProfileField field) {
+        ArtistProfileFieldDto dto = new ArtistProfileFieldDto();
+        dto.setId(field.getId());
+        dto.setArtistTypeFieldId(field.getArtistTypeField().getId());
+        dto.setFieldName(field.getArtistTypeField().getFieldName());
+        dto.setDisplayName(field.getArtistTypeField().getDisplayName());
+        dto.setFieldValue(field.getFieldValue());
+        dto.setFileUrl(field.getFileUrl());
+        dto.setFileName(field.getFileName());
+        dto.setFileSize(field.getFileSize());
+        dto.setMimeType(field.getMimeType());
+        return dto;
     }
 }
