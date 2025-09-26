@@ -23,6 +23,12 @@ public class User extends BaseEntity {
     @Column(name = "mobile", unique = true, nullable = false)
     private String mobile;
 
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+
     @Column(name = "password")
     private String password;
 
@@ -46,6 +52,40 @@ public class User extends BaseEntity {
     @Column(name = "account_locked_until")
     private LocalDateTime accountLockedUntil;
 
+    // Account Management Fields
+    @Enumerated(EnumType.STRING)
+    @Column(name = "account_status", nullable = false)
+    private AccountStatus accountStatus = AccountStatus.ACTIVE;
+
+    @Column(name = "deactivated_at")
+    private LocalDateTime deactivatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deactivated_by")
+    private User deactivatedBy;
+
+    @Column(name = "deactivation_reason", columnDefinition = "TEXT")
+    private String deactivationReason;
+
+    @Column(name = "reactivated_at")
+    private LocalDateTime reactivatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reactivated_by")
+    private User reactivatedBy;
+
+    @Column(name = "reactivation_reason", columnDefinition = "TEXT")
+    private String reactivationReason;
+
+    @Column(name = "last_activity")
+    private LocalDateTime lastActivity;
+
+    @Column(name = "login_attempts")
+    private Integer loginAttempts = 0;
+
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private ArtistProfile artistProfile;
 
@@ -64,5 +104,9 @@ public class User extends BaseEntity {
 
     public enum UserStatus {
         ACTIVE, INACTIVE, BANNED, SUSPENDED
+    }
+
+    public enum AccountStatus {
+        ACTIVE, INACTIVE, SUSPENDED, BANNED, PENDING_VERIFICATION
     }
 }

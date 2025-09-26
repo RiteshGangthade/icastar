@@ -74,4 +74,27 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByCreatedAtAfter(LocalDateTime cutoffDate);
 
     List<User> findByLastLoginAfterAndStatus(LocalDateTime cutoffDate, User.UserStatus status);
+    
+    // Account Management Methods
+    Long countByAccountStatus(User.AccountStatus accountStatus);
+    
+    List<User> findByAccountStatus(User.AccountStatus accountStatus);
+    
+    Page<User> findByAccountStatus(User.AccountStatus accountStatus, Pageable pageable);
+    
+    @Query("SELECT u FROM User u WHERE u.accountStatus = :status AND u.role = :role")
+    Page<User> findByAccountStatusAndRole(@Param("status") User.AccountStatus status, 
+                                          @Param("role") User.UserRole role, 
+                                          Pageable pageable);
+    
+    @Query("SELECT u FROM User u WHERE u.accountStatus = :status AND (u.email LIKE %:search% OR u.mobile LIKE %:search%)")
+    Page<User> findByAccountStatusAndSearch(@Param("status") User.AccountStatus status, 
+                                           @Param("search") String search, 
+                                           Pageable pageable);
+    
+    @Query("SELECT u FROM User u WHERE u.accountStatus = :status AND u.role = :role AND (u.email LIKE %:search% OR u.mobile LIKE %:search%)")
+    Page<User> findByAccountStatusAndRoleAndSearch(@Param("status") User.AccountStatus status, 
+                                                   @Param("role") User.UserRole role, 
+                                                   @Param("search") String search, 
+                                                   Pageable pageable);
 }

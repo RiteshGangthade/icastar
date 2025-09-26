@@ -55,7 +55,7 @@ public class Message extends BaseEntity {
     @Column(name = "is_paid_message", nullable = false)
     private Boolean isPaidMessage = false;
 
-    @Column(name = "payment_amount", columnDefinition = "DECIMAL(10,2)")
+    @Column(name = "payment_amount")
     private Double paymentAmount;
 
     @Column(name = "payment_reference")

@@ -51,6 +51,18 @@ public class JobPost extends BaseEntity {
     @Column(name = "budget_max", columnDefinition = "DECIMAL(10,2)")
     private BigDecimal budgetMax;
 
+    @Column(name = "salary_min", columnDefinition = "DECIMAL(10,2)")
+    private BigDecimal salaryMin;
+
+    @Column(name = "salary_max", columnDefinition = "DECIMAL(10,2)")
+    private BigDecimal salaryMax;
+
+    @Column(name = "currency", length = 3)
+    private String currency;
+
+    @Column(name = "start_date")
+    private LocalDateTime startDate;
+
     @Column(name = "location")
     private String location;
 
@@ -80,7 +92,7 @@ public class JobPost extends BaseEntity {
     private Boolean isVisible = true;
 
     @OneToMany(mappedBy = "jobPost", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<JobApplication> jobApplications;
+    private List<JobApplication> applications;
 
     @OneToMany(mappedBy = "jobPost", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<BookmarkedJob> bookmarkedJobs;
@@ -94,6 +106,6 @@ public class JobPost extends BaseEntity {
     }
 
     public enum JobStatus {
-        ACTIVE, CLOSED, EXPIRED, DRAFT
+        ACTIVE, CLOSED, EXPIRED, DRAFT, OPEN
     }
 }

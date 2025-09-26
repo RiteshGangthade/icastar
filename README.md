@@ -93,9 +93,7 @@ src/main/java/com/icastar/platform/
    USE icastar_db;
    source database-schema.sql;
    
-   # Add Dancer default data (optional)
-   ./setup-dancer-data.sh
-   ```
+
 
 3. **Run the application**
    ```bash

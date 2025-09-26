@@ -26,6 +26,9 @@ public class RecruiterProfile extends BaseEntity {
     @Column(name = "contact_person_name", nullable = false)
     private String contactPersonName;
 
+    @Column(name = "contact_phone")
+    private String contactPhone;
+
     @Column(name = "designation")
     private String designation;
 
@@ -59,8 +62,15 @@ public class RecruiterProfile extends BaseEntity {
     @Column(name = "chat_credits")
     private Integer chatCredits = 0;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recruiter_category_id")
+    private RecruiterCategory recruiterCategory;
+
     @OneToMany(mappedBy = "recruiter", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<JobPost> jobPosts;
+
+    @OneToMany(mappedBy = "recruiterProfile", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<RecruiterProfileField> dynamicFields;
 
     // Messages are handled at User level, not RecruiterProfile level
     // @OneToMany(mappedBy = "recruiter", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
