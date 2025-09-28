@@ -8,10 +8,11 @@ iCastar is a centralized platform that enables seamless job postings, applicatio
 
 ## ✨ Key Features
 
-### 🎭 Dynamic Artist System
+### 🎭 Dynamic Artist & Recruiter System
 - **Multiple Artist Types**: Actor, Dancer, Singer, Director, Writer, DJ/RJ, Band, Model, Photographer, Videographer
-- **Custom Fields**: Each artist type has unique fields (e.g., height for actors, dance styles for dancers)
-- **Extensible**: Easy addition of new artist types without code changes
+- **Multiple Recruiter Types**: Production House, Casting Director, Individual Recruiter
+- **Custom Fields**: Each artist and recruiter type has unique fields (e.g., height for actors, dance styles for dancers)
+- **Extensible**: Easy addition of new artist or recruiter types without code changes
 - **Searchable**: Advanced search with type-specific filters
 
 ### 🔐 Authentication & Security
@@ -33,7 +34,7 @@ iCastar is a centralized platform that enables seamless job postings, applicatio
 - Read receipts and timestamps
 
 ### 💳 Subscription & Payments
-- Tiered subscription plans (Free, Premium, Enterprise)
+- Tiered subscription plans (Free, Premium, Enterprise) for Artists, Recruiters, and unified plans.
 - In-app payment handling via Razorpay/Stripe
 - Commission tracking and management
 - Invoice generation and billing history
@@ -93,7 +94,12 @@ src/main/java/com/icastar/platform/
    USE icastar_db;
    source database-schema.sql;
    
-
+   # Run setup scripts
+   ./setup-artist-types-manual.sh
+   ./setup-recruiter-system.sh
+   ./setup-account-management.sh
+   ./setup-subscription-system.sh
+   ```
 
 3. **Run the application**
    ```bash
@@ -105,15 +111,7 @@ src/main/java/com/icastar/platform/
    - Admin Panel: `http://localhost:8080/api/admin`
    - H2 Console (dev): `http://localhost:8080/api/h2-console`
 
-### 📚 Comprehensive Documentation
-
-- **[ARTIST-ONBOARDING-GUIDE.md](ARTIST-ONBOARDING-GUIDE.md)** - Complete step-by-step guide for adding artists
-- **[ADDING-NEW-ARTIST-TYPES-GUIDE.md](ADDING-NEW-ARTIST-TYPES-GUIDE.md)** - How to add new artist types dynamically
-- **[DATABASE-SETUP-GUIDE.md](DATABASE-SETUP-GUIDE.md)** - Detailed database setup with sample data
-- **[API-DOCUMENTATION.md](API-DOCUMENTATION.md)** - Complete API reference
-- **[DEVELOPMENT-GUIDE.md](DEVELOPMENT-GUIDE.md)** - Development setup and guidelines
-
-## 📊 Database Schema
+## 🗄️ Database Schema
 
 ### Core Tables
 - `users` - User accounts and authentication
@@ -131,6 +129,11 @@ src/main/java/com/icastar/platform/
 - `artist_type_fields` - Field definitions for each artist type
 - `artist_profile_fields` - Dynamic field values for artist profiles
 
+### Dynamic Recruiter System Tables
+- `recruiter_categories` - Recruiter type definitions (Production House, etc.)
+- `recruiter_category_fields` - Field definitions for each recruiter type
+- `recruiter_profile_fields` - Dynamic field values for recruiter profiles
+
 ### Supporting Tables
 - `subscription_plans` - Available subscription plans
 - `otps` - OTP management for authentication
@@ -139,7 +142,7 @@ src/main/java/com/icastar/platform/
 
 ## 🎨 Artist Types & Fields
 
-The platform supports the following artist types with their specific fields. **Dancer type is fully configured with sample data** - see [DATABASE-SETUP-GUIDE.md](DATABASE-SETUP-GUIDE.md) for details.
+The platform supports multiple artist types with their specific fields. The `Dancer` type is fully configured with sample data.
 
 ### 🎬 Actor
 - Height, Weight, Body Type
@@ -151,50 +154,22 @@ The platform supports the following artist types with their specific fields. **D
 - **Required**: Dance Styles, Training Background, Performance Experience, Performance Videos
 - **Optional**: Choreography Skills, Teaching Experience, Flexibility Level, Performance Types
 - **Additional**: Awards & Recognition, Availability, Travel Willingness, Costume Availability
-- **Sample Data**: 2 test profiles with complete field values
 
-### 🎤 Singer
-- Vocal Range, Music Genres
-- Instruments, Recording Experience
-- Live Performance, Demo Tracks
-- Original Compositions
+... and so on for other artist types.
 
-### 🎬 Director
-- Directing Experience, Project Types
-- Equipment Owned, Team Size
-- Portfolio, Awards
+## 🏢 Recruiter Categories
 
-### ✍️ Writer
-- Writing Experience, Writing Types
-- Languages, Published Works
-- Writing Samples
+### 1. Production House 🎬
+- **Basic Information**: Name of Production House, Name of Recruiter, Location, Years in business
+- **Advanced Information**: Mobile Number Verification, Email ID, ID Proof, Registration Certificate
 
-### 🎧 DJ/RJ
-- Music Genres, Equipment Owned
-- Venue Experience, Mixing Skills
-- Demo Mix
+### 2. Casting Director 🎭
+- **Basic Information**: Name of Recruiter, Location, Name of the Production House
+- **Advanced Information**: Mobile Number Verification, Casting Director Card/ID Proof, Face Verification
 
-### 🎸 Band
-- Band Size, Music Genres
-- Instruments, Performance Experience
-- Original Songs, Demo Tracks
-- Equipment Owned
-
-### 👗 Model
-- Height, Weight, Body Measurements
-- Hair Color, Eye Color
-- Modeling Types, Portfolio
-- Comp Cards
-
-### 📸 Photographer
-- Photography Types, Equipment Owned
-- Editing Software, Portfolio
-- Studio Available
-
-### 🎥 Videographer
-- Video Types, Equipment Owned
-- Editing Software, Portfolio
-- Drone License
+### 3. Individual Recruiter 👤
+- **Basic Information**: Name, Location, Email ID, Contact Details
+- **Advanced Information**: ID Proof, Face Verification
 
 ## 🔌 API Endpoints
 
@@ -222,8 +197,6 @@ The platform supports the following artist types with their specific fields. **D
 - `GET /api/admin/users` - User management
 - `GET /api/admin/jobs` - Job management
 - `GET /api/admin/analytics` - Analytics
-
-For complete API documentation, see `API-DOCUMENTATION.md`.
 
 ## 🔧 Configuration
 
@@ -316,7 +289,7 @@ docker-compose up -d
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ## 🆘 Support
 
