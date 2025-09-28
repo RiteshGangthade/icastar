@@ -39,3 +39,4 @@ buildNumber.properties
 
 # Mac
 .DS_Store
+/logs

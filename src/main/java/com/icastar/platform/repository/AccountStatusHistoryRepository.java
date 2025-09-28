@@ -14,8 +14,6 @@ public interface AccountStatusHistoryRepository extends JpaRepository<AccountSta
     
     List<AccountStatusHistory> findByUserIdOrderByCreatedAtDesc(Long userId);
     
-    List<AccountStatusHistory> findByChangedByOrderByCreatedAtDesc(Long changedBy);
-    
     @Query("SELECT ash FROM AccountStatusHistory ash WHERE ash.user.id = :userId AND ash.status = :status ORDER BY ash.createdAt DESC")
     List<AccountStatusHistory> findByUserIdAndStatus(@Param("userId") Long userId, @Param("status") AccountStatusHistory.AccountStatus status);
     

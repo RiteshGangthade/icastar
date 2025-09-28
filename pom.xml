@@ -67,6 +67,11 @@
             <version>8.0.33</version>
         </dependency>
         
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+        </dependency>
+        
         <!-- H2 Database for development and testing -->
         <dependency>
             <groupId>com.h2database</groupId>

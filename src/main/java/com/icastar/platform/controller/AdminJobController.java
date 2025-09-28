@@ -90,17 +90,6 @@ public class AdminJobController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/{jobId}/toggle-visibility")
-    public ResponseEntity<JobPostDto> toggleJobVisibility(@PathVariable Long jobId) {
-        log.info("Admin toggling visibility for job post: {}", jobId);
-        
-        // Admin can toggle visibility of any job post, so we pass null as recruiterId
-        JobPost jobPost = jobService.toggleJobVisibility(jobId, null);
-        JobPostDto jobDto = new JobPostDto(jobPost);
-        
-        return ResponseEntity.ok(jobDto);
-    }
-
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> getJobStats() {
         log.info("Admin fetching job statistics");

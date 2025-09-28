@@ -1,8 +1,4 @@
--- iCastar Platform Database Schema
--- MySQL 8.0+ compatible
-
-CREATE DATABASE IF NOT EXISTS icastar_db;
-USE icastar_db;
+-- Flyway Migration: V1 - Initial Schema
 
 -- Users table
 CREATE TABLE users (
@@ -18,7 +14,17 @@ CREATE TABLE users (
     account_locked_until DATETIME,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    account_status ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED', 'BANNED', 'PENDING_VERIFICATION') NOT NULL DEFAULT 'ACTIVE',
+    deactivated_at DATETIME NULL,
+    deactivated_by BIGINT NULL,
+    deactivation_reason TEXT NULL,
+    reactivated_at DATETIME NULL,
+    reactivated_by BIGINT NULL,
+    reactivation_reason TEXT NULL,
+    last_activity DATETIME NULL,
+    login_attempts INT DEFAULT 0,
+    locked_until DATETIME NULL
 );
 
 -- Artist Types table
@@ -30,6 +36,80 @@ CREATE TABLE artist_types (
     icon_url VARCHAR(500),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     sort_order INT DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Recruiter Categories table
+CREATE TABLE recruiter_categories (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL,
+    display_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    icon_url VARCHAR(500),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    sort_order INT DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Subscription Plans table
+CREATE TABLE subscription_plans (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    plan_type ENUM('FREE', 'BASIC', 'PREMIUM', 'PROFESSIONAL', 'ENTERPRISE') NOT NULL,
+    user_role ENUM('ARTIST', 'RECRUITER', 'BOTH') NOT NULL DEFAULT 'BOTH',
+    price DECIMAL(10,2) NOT NULL,
+    billing_cycle ENUM('MONTHLY', 'YEARLY', 'ONE_TIME') NOT NULL,
+    max_auditions INT DEFAULT 0,
+    unlimited_auditions BOOLEAN NOT NULL DEFAULT FALSE,
+    max_applications INT DEFAULT 0,
+    unlimited_applications BOOLEAN NOT NULL DEFAULT FALSE,
+    max_portfolio_items INT DEFAULT 0,
+    unlimited_portfolio BOOLEAN NOT NULL DEFAULT FALSE,
+    profile_verification BOOLEAN NOT NULL DEFAULT FALSE,
+    priority_verification BOOLEAN NOT NULL DEFAULT FALSE,
+    featured_profile BOOLEAN NOT NULL DEFAULT FALSE,
+    advanced_analytics BOOLEAN NOT NULL DEFAULT FALSE,
+    max_job_posts INT DEFAULT 0,
+    unlimited_job_posts BOOLEAN NOT NULL DEFAULT FALSE,
+    max_messages INT DEFAULT 0,
+    unlimited_messages BOOLEAN NOT NULL DEFAULT FALSE,
+    max_candidates_view INT DEFAULT 0,
+    unlimited_candidates BOOLEAN NOT NULL DEFAULT FALSE,
+    job_boost_credits INT DEFAULT 0,
+    advanced_search BOOLEAN NOT NULL DEFAULT FALSE,
+    candidate_verification BOOLEAN NOT NULL DEFAULT FALSE,
+    priority_support BOOLEAN NOT NULL DEFAULT FALSE,
+    max_file_uploads INT DEFAULT 0,
+    unlimited_uploads BOOLEAN NOT NULL DEFAULT FALSE,
+    max_file_size_mb INT DEFAULT 10,
+    custom_branding BOOLEAN NOT NULL DEFAULT FALSE,
+    api_access BOOLEAN NOT NULL DEFAULT FALSE,
+    white_label BOOLEAN NOT NULL DEFAULT FALSE,
+    is_featured BOOLEAN NOT NULL DEFAULT FALSE,
+    is_popular BOOLEAN NOT NULL DEFAULT FALSE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    sort_order INT DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Job Posting Fields table
+CREATE TABLE job_posting_fields (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    field_name VARCHAR(100) NOT NULL,
+    display_name VARCHAR(100) NOT NULL,
+    field_type ENUM('TEXT', 'TEXTAREA', 'NUMBER', 'EMAIL', 'PHONE', 'URL', 'DATE', 'BOOLEAN', 'SELECT', 'MULTI_SELECT', 'CHECKBOX', 'RADIO', 'FILE', 'JSON') NOT NULL,
+    is_required BOOLEAN NOT NULL DEFAULT FALSE,
+    is_searchable BOOLEAN NOT NULL DEFAULT FALSE,
+    sort_order INT DEFAULT 0,
+    validation_rules JSON,
+    options JSON,
+    placeholder VARCHAR(255),
+    help_text VARCHAR(500),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -52,6 +132,51 @@ CREATE TABLE artist_type_fields (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (artist_type_id) REFERENCES artist_types(id) ON DELETE CASCADE
+);
+
+-- Recruiter Category Fields table
+CREATE TABLE recruiter_category_fields (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    recruiter_category_id BIGINT NOT NULL,
+    field_name VARCHAR(100) NOT NULL,
+    display_name VARCHAR(100) NOT NULL,
+    field_type ENUM('TEXT', 'TEXTAREA', 'NUMBER', 'EMAIL', 'PHONE', 'URL', 'DATE', 'BOOLEAN', 'SELECT', 'MULTI_SELECT', 'CHECKBOX', 'RADIO', 'FILE', 'JSON') NOT NULL,
+    is_required BOOLEAN NOT NULL DEFAULT FALSE,
+    is_searchable BOOLEAN NOT NULL DEFAULT FALSE,
+    sort_order INT DEFAULT 0,
+    validation_rules JSON,
+    options JSON,
+    placeholder VARCHAR(255),
+    help_text VARCHAR(500),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (recruiter_category_id) REFERENCES recruiter_categories(id) ON DELETE CASCADE
+);
+
+-- Recruiter Profiles table
+CREATE TABLE recruiter_profiles (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    contact_person_name VARCHAR(255) NOT NULL,
+    designation VARCHAR(100),
+    company_description TEXT,
+    company_website VARCHAR(255),
+    company_logo_url VARCHAR(500),
+    industry VARCHAR(100),
+    company_size VARCHAR(50),
+    location VARCHAR(255),
+    is_verified_company BOOLEAN NOT NULL DEFAULT FALSE,
+    total_jobs_posted INT DEFAULT 0,
+    successful_hires INT DEFAULT 0,
+    chat_credits INT DEFAULT 0,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    recruiter_category_id BIGINT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (recruiter_category_id) REFERENCES recruiter_categories(id) ON DELETE SET NULL
 );
 
 -- Artist Profiles table
@@ -83,7 +208,34 @@ CREATE TABLE artist_profiles (
     FOREIGN KEY (artist_type_id) REFERENCES artist_types(id)
 );
 
--- Artist Profile Fields table (Dynamic fields)
+-- Subscriptions table
+CREATE TABLE subscriptions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    subscription_plan_id BIGINT NOT NULL,
+    status ENUM('ACTIVE', 'EXPIRED', 'CANCELLED', 'SUSPENDED', 'TRIAL') NOT NULL,
+    start_date DATETIME NOT NULL,
+    end_date DATETIME,
+    auto_renew BOOLEAN NOT NULL DEFAULT FALSE,
+    amount_paid DECIMAL(10,2),
+    payment_reference VARCHAR(255),
+    auditions_used INT DEFAULT 0,
+    applications_used INT DEFAULT 0,
+    job_posts_used INT DEFAULT 0,
+    messages_used INT DEFAULT 0,
+    candidates_viewed INT DEFAULT 0,
+    job_boosts_used INT DEFAULT 0,
+    file_uploads_used INT DEFAULT 0,
+    is_trial BOOLEAN NOT NULL DEFAULT FALSE,
+    trial_end_date DATETIME,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (subscription_plan_id) REFERENCES subscription_plans(id)
+);
+
+-- Artist Profile Fields table
 CREATE TABLE artist_profile_fields (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     artist_profile_id BIGINT NOT NULL,
@@ -101,68 +253,20 @@ CREATE TABLE artist_profile_fields (
     UNIQUE KEY unique_profile_field (artist_profile_id, artist_type_field_id)
 );
 
--- Recruiter Profiles table
-CREATE TABLE recruiter_profiles (
+-- Recruiter Profile Fields table
+CREATE TABLE recruiter_profile_fields (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    company_name VARCHAR(255) NOT NULL,
-    contact_person_name VARCHAR(255) NOT NULL,
-    designation VARCHAR(100),
-    company_description TEXT,
-    company_website VARCHAR(255),
-    company_logo_url VARCHAR(500),
-    industry VARCHAR(100),
-    company_size VARCHAR(50),
-    location VARCHAR(255),
-    is_verified_company BOOLEAN NOT NULL DEFAULT FALSE,
-    total_jobs_posted INT DEFAULT 0,
-    successful_hires INT DEFAULT 0,
-    chat_credits INT DEFAULT 0,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    recruiter_profile_id BIGINT NOT NULL,
+    recruiter_category_field_id BIGINT NOT NULL,
+    field_value TEXT,
+    file_url VARCHAR(500),
+    file_name VARCHAR(255),
+    file_size BIGINT,
+    mime_type VARCHAR(100),
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Subscription Plans table
-CREATE TABLE subscription_plans (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    plan_type ENUM('FREE', 'PREMIUM', 'ENTERPRISE') NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    billing_cycle ENUM('MONTHLY', 'YEARLY', 'ONE_TIME') NOT NULL,
-    max_auditions INT,
-    max_messages INT,
-    unlimited_auditions BOOLEAN NOT NULL DEFAULT FALSE,
-    unlimited_messages BOOLEAN NOT NULL DEFAULT FALSE,
-    job_boost_credits INT DEFAULT 0,
-    priority_support BOOLEAN NOT NULL DEFAULT FALSE,
-    is_featured BOOLEAN NOT NULL DEFAULT FALSE,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
--- Subscriptions table
-CREATE TABLE subscriptions (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    subscription_plan_id BIGINT NOT NULL,
-    status ENUM('ACTIVE', 'EXPIRED', 'CANCELLED', 'SUSPENDED') NOT NULL,
-    start_date DATETIME NOT NULL,
-    end_date DATETIME,
-    auto_renew BOOLEAN NOT NULL DEFAULT FALSE,
-    amount_paid DECIMAL(10,2),
-    payment_reference VARCHAR(255),
-    auditions_used INT DEFAULT 0,
-    messages_used INT DEFAULT 0,
-    job_boosts_used INT DEFAULT 0,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (subscription_plan_id) REFERENCES subscription_plans(id)
+    FOREIGN KEY (recruiter_profile_id) REFERENCES recruiter_profiles(id) ON DELETE CASCADE,
+    FOREIGN KEY (recruiter_category_field_id) REFERENCES recruiter_category_fields(id) ON DELETE CASCADE
 );
 
 -- Job Posts table
@@ -189,6 +293,22 @@ CREATE TABLE job_posts (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (recruiter_id) REFERENCES recruiter_profiles(id) ON DELETE CASCADE
+);
+
+-- Job Posting Field Values table
+CREATE TABLE job_posting_field_values (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    job_post_id BIGINT NOT NULL,
+    job_posting_field_id BIGINT NOT NULL,
+    field_value TEXT,
+    file_url VARCHAR(500),
+    file_name VARCHAR(255),
+    file_size BIGINT,
+    mime_type VARCHAR(100),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (job_post_id) REFERENCES job_posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (job_posting_field_id) REFERENCES job_posting_fields(id) ON DELETE CASCADE
 );
 
 -- Job Applications table
@@ -365,11 +485,109 @@ CREATE TABLE notifications (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Indexes for better performance
+-- Account Management Log table
+CREATE TABLE account_management_log (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    admin_id BIGINT NOT NULL,
+    action ENUM('ACTIVATE', 'DEACTIVATE', 'SUSPEND', 'UNSUSPEND', 'BAN', 'UNBAN', 'VERIFY', 'UNVERIFY') NOT NULL,
+    previous_status ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED', 'BANNED', 'PENDING_VERIFICATION') NOT NULL,
+    new_status ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED', 'BANNED', 'PENDING_VERIFICATION') NOT NULL,
+    reason TEXT,
+    admin_notes TEXT,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Account Status History table
+CREATE TABLE account_status_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    status ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED', 'BANNED', 'PENDING_VERIFICATION') NOT NULL,
+    changed_by BIGINT NOT NULL,
+    reason TEXT,
+    notes TEXT,
+    effective_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Admin Permissions table
+CREATE TABLE admin_permissions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    permission_type ENUM('ACCOUNT_MANAGEMENT', 'USER_MANAGEMENT', 'CONTENT_MODERATION', 'PAYMENT_MANAGEMENT', 'SYSTEM_ADMIN') NOT NULL,
+    permission_level ENUM('READ', 'WRITE', 'ADMIN', 'SUPER_ADMIN') NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    granted_by BIGINT NOT NULL,
+    granted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Plan Features table
+CREATE TABLE plan_features (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    subscription_plan_id BIGINT NOT NULL,
+    feature_name VARCHAR(100) NOT NULL,
+    feature_description TEXT,
+    feature_type ENUM('LIMIT', 'BOOLEAN', 'NUMBER', 'TEXT') NOT NULL,
+    feature_value VARCHAR(255),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (subscription_plan_id) REFERENCES subscription_plans(id) ON DELETE CASCADE
+);
+
+-- Usage Tracking table
+CREATE TABLE usage_tracking (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    subscription_id BIGINT NOT NULL,
+    feature_name VARCHAR(100) NOT NULL,
+    usage_count INT DEFAULT 1,
+    usage_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    metadata JSON,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (subscription_id) REFERENCES subscriptions(id) ON DELETE CASCADE
+);
+
+-- Subscription Changes table
+CREATE TABLE subscription_changes (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    from_plan_id BIGINT,
+    to_plan_id BIGINT NOT NULL,
+    change_type ENUM('UPGRADE', 'DOWNGRADE', 'RENEWAL', 'CANCELLATION') NOT NULL,
+    change_reason TEXT,
+    prorated_amount DECIMAL(10,2),
+    effective_date DATETIME NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (from_plan_id) REFERENCES subscription_plans(id),
+    FOREIGN KEY (to_plan_id) REFERENCES subscription_plans(id)
+);
+
+-- Add foreign keys for users table
+ALTER TABLE users 
+ADD CONSTRAINT fk_users_deactivated_by FOREIGN KEY (deactivated_by) REFERENCES users(id) ON DELETE SET NULL,
+ADD CONSTRAINT fk_users_reactivated_by FOREIGN KEY (reactivated_by) REFERENCES users(id) ON DELETE SET NULL;
+
+-- Indexes
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_mobile ON users(mobile);
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_status ON users(status);
+CREATE INDEX idx_users_account_status ON users(account_status);
+CREATE INDEX idx_users_deactivated_at ON users(deactivated_at);
 
 CREATE INDEX idx_job_posts_recruiter ON job_posts(recruiter_id);
 CREATE INDEX idx_job_posts_status ON job_posts(status);
@@ -399,7 +617,6 @@ CREATE INDEX idx_notifications_user ON notifications(user_id);
 CREATE INDEX idx_notifications_type ON notifications(type);
 CREATE INDEX idx_notifications_is_read ON notifications(is_read);
 
--- Indexes for artist type system
 CREATE INDEX idx_artist_types_name ON artist_types(name);
 CREATE INDEX idx_artist_types_active ON artist_types(is_active);
 CREATE INDEX idx_artist_types_sort_order ON artist_types(sort_order);
@@ -415,13 +632,11 @@ CREATE INDEX idx_artist_profiles_verified ON artist_profiles(is_verified_badge);
 CREATE INDEX idx_artist_profile_fields_profile ON artist_profile_fields(artist_profile_id);
 CREATE INDEX idx_artist_profile_fields_type_field ON artist_profile_fields(artist_type_field_id);
 
--- Insert default subscription plans
-INSERT INTO subscription_plans (name, description, plan_type, price, billing_cycle, max_auditions, max_messages, unlimited_auditions, unlimited_messages, job_boost_credits, priority_support, is_featured) VALUES
-('Free Plan', 'Basic access with limited features', 'FREE', 0.00, 'MONTHLY', 5, 10, FALSE, FALSE, 0, FALSE, FALSE),
-('Premium Plan', 'Enhanced features with more auditions and messages', 'PREMIUM', 999.00, 'MONTHLY', 50, 100, FALSE, FALSE, 5, TRUE, TRUE),
-('Unlimited Plan', 'Unlimited access to all features', 'PREMIUM', 1999.00, 'MONTHLY', NULL, NULL, TRUE, TRUE, 10, TRUE, TRUE),
-('Enterprise Plan', 'Custom solutions for large organizations', 'ENTERPRISE', 4999.00, 'MONTHLY', NULL, NULL, TRUE, TRUE, 25, TRUE, TRUE);
+CREATE INDEX idx_account_management_log_user_id ON account_management_log(user_id);
+CREATE INDEX idx_account_management_log_admin_id ON account_management_log(admin_id);
+CREATE INDEX idx_account_management_log_action ON account_management_log(action);
 
--- Insert default admin user (password: admin123)
-INSERT INTO users (email, mobile, password, role, status, is_verified) VALUES
-('admin@icastar.com', '+919876543210', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', 'ADMIN', 'ACTIVE', TRUE);
+CREATE INDEX idx_account_status_history_user_id ON account_status_history(user_id);
+
+CREATE INDEX idx_admin_permissions_user_id ON admin_permissions(user_id);
+CREATE INDEX idx_admin_permissions_permission_type ON admin_permissions(permission_type);
