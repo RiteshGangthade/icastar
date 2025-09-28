@@ -3,6 +3,14 @@ package com.icastar.platform.controller;
 import com.icastar.platform.dto.ArtistTypeDto;
 import com.icastar.platform.dto.ArtistTypeFieldDto;
 import com.icastar.platform.service.ArtistTypeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -11,9 +19,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/public/artist-types")
+@RequestMapping("/public/artist-types")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Public", description = "Public API endpoints for general information")
 public class PublicArtistTypeController {
 
     private final ArtistTypeService artistTypeService;

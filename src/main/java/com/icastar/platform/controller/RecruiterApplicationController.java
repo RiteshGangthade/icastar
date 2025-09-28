@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/recruiter/applications")
+@RequestMapping("/recruiter/applications")
 @RequiredArgsConstructor
 @Slf4j
 public class RecruiterApplicationController {

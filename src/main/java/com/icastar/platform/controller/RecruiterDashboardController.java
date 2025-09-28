@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/recruiter/dashboard")
+@RequestMapping("/recruiter/dashboard")
 @RequiredArgsConstructor
 @Slf4j
 public class RecruiterDashboardController {

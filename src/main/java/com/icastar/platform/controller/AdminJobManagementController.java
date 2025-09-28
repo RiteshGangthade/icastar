@@ -9,6 +9,15 @@ import com.icastar.platform.entity.JobPost;
 import com.icastar.platform.entity.User;
 import com.icastar.platform.service.AdminJobManagementService;
 import com.icastar.platform.service.JobService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +34,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/admin/jobs")
+@RequestMapping("/admin/jobs")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Admin", description = "Administrative operations and management")
+@SecurityRequirement(name = "bearerAuth")
 public class AdminJobManagementController {
 
     private final AdminJobManagementService adminJobManagementService;

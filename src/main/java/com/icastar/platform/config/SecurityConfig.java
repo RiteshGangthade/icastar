@@ -47,6 +47,8 @@ public class SecurityConfig {
                                 "/auth/login",
                                 "/public/**",
                                 "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/api-docs/**",
                                 "/v3/api-docs/**",
                                 "/actuator/health",
                                 "/error"                 // avoid auth loops

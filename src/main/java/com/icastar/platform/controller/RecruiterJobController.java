@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/recruiter/jobs")
+@RequestMapping("/recruiter/jobs")
 @RequiredArgsConstructor
 @Slf4j
 public class RecruiterJobController {

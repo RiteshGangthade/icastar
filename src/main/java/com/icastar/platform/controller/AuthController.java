@@ -8,6 +8,15 @@ import com.icastar.platform.security.JwtTokenProvider;
 import com.icastar.platform.service.EmailService;
 import com.icastar.platform.service.OtpService;
 import com.icastar.platform.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +32,7 @@ import java.util.Map;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Authentication", description = "User authentication and authorization endpoints")
 public class AuthController {
 
     private final OtpService otpService;
@@ -32,8 +42,41 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
 
+    @Operation(
+            summary = "Send OTP",
+            description = "Send OTP to user's mobile number for authentication. If user exists, sends login OTP; otherwise sends registration OTP.",
+            operationId = "sendOtp"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "OTP sent successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Map.class),
+                            examples = @ExampleObject(
+                                    name = "Success Response",
+                                    value = "{\"success\": true, \"message\": \"OTP sent successfully\", \"mobile\": \"+919876543210\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request or mobile number",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Map.class),
+                            examples = @ExampleObject(
+                                    name = "Error Response",
+                                    value = "{\"success\": false, \"message\": \"Invalid mobile number format\"}"
+                            )
+                    )
+            )
+    })
     @PostMapping("/otp/send")
-    public ResponseEntity<Map<String, Object>> sendOtp(@Valid @RequestBody OtpRequestDto request) {
+    public ResponseEntity<Map<String, Object>> sendOtp(
+            @Parameter(description = "OTP request details", required = true)
+            @Valid @RequestBody OtpRequestDto request) {
         try {
             // Check if user exists for login OTP
             User existingUser = userRepository.findByEmailOrMobile(request.getMobile(), request.getMobile()).orElse(null);
