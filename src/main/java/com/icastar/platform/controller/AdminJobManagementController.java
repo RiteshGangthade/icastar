@@ -265,6 +265,23 @@ public class AdminJobManagementController {
         }
     }
 
+    // Merged from AdminJobController
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Object>> getJobStats() {
+        log.info("Admin fetching job statistics");
+        try {
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalJobs", jobService.getTotalJobsCount());
+            stats.put("activeJobs", jobService.getActiveJobsCount());
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", stats);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return buildErrorResponse("Failed to fetch job statistics: " + e.getMessage());
+        }
+    }
+
     private String getClientIpAddress(HttpServletRequest request) {
         String xForwardedForHeader = request.getHeader("X-Forwarded-For");
         return (xForwardedForHeader == null) ? request.getRemoteAddr() : xForwardedForHeader.split(",")[0];

@@ -14,9 +14,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableJpaAuditing
 @EnableAsync
 @EnableScheduling
-public class IcastarPlatformApplication {
+public class IcastarApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(IcastarPlatformApplication.class, args);
+        SpringApplication.run(IcastarApplication.class, args);
     }
 }

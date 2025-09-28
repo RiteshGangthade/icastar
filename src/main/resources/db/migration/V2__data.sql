@@ -18,25 +18,25 @@ INSERT IGNORE INTO recruiter_categories (id, name, display_name, description, ic
 (3, 'INDIVIDUAL', 'Individual Recruiter', 'Entrepreneurs, event managers, ad agencies, and individual recruiters', '/icons/individual-recruiter.png', 3);
 
 -- Insert subscription plans
-INSERT IGNORE INTO subscription_plans (name, description, plan_type, user_role, price, billing_cycle, max_auditions, max_applications, max_portfolio_items, profile_verification, featured_profile, advanced_analytics, max_file_uploads, max_file_size_mb, sort_order) VALUES
-('Artist Free', 'Basic plan for new artists to get started', 'FREE', 'ARTIST', 0.00, 'MONTHLY', 5, 10, 5, FALSE, FALSE, FALSE, 10, 10, 1),
-('Artist Basic', 'Essential features for growing artists', 'BASIC', 'ARTIST', 299.00, 'MONTHLY', 25, 50, 20, TRUE, FALSE, FALSE, 50, 25, 2),
-('Artist Premium', 'Advanced features for professional artists', 'PREMIUM', 'ARTIST', 599.00, 'MONTHLY', 100, 200, 100, TRUE, TRUE, TRUE, 200, 50, 3),
-('Artist Professional', 'Complete toolkit for established artists', 'PROFESSIONAL', 'ARTIST', 999.00, 'MONTHLY', 500, 1000, 500, TRUE, TRUE, TRUE, 1000, 100, 4),
-('Artist Enterprise', 'Unlimited access for top-tier artists', 'ENTERPRISE', 'ARTIST', 1999.00, 'MONTHLY', NULL, NULL, NULL, TRUE, TRUE, TRUE, NULL, 500, 5);
+INSERT IGNORE INTO subscription_plans (name, description, plan_type, user_role, price, billing_cycle, max_auditions, unlimited_auditions, max_applications, unlimited_applications, max_portfolio_items, unlimited_portfolio, profile_verification, featured_profile, advanced_analytics, max_file_uploads, unlimited_uploads, max_file_size_mb, sort_order) VALUES
+('Artist Free', 'Basic plan for new artists to get started', 'FREE', 'ARTIST', 0.00, 'MONTHLY', 5, FALSE, 10, FALSE, 5, FALSE, FALSE, FALSE, FALSE, 10, FALSE, 10, 1),
+('Artist Basic', 'Essential features for growing artists', 'BASIC', 'ARTIST', 299.00, 'MONTHLY', 25, FALSE, 50, FALSE, 20, FALSE, TRUE, FALSE, FALSE, 50, FALSE, 25, 2),
+('Artist Premium', 'Advanced features for professional artists', 'PREMIUM', 'ARTIST', 599.00, 'MONTHLY', 100, FALSE, 200, FALSE, 100, FALSE, TRUE, TRUE, TRUE, 200, FALSE, 50, 3),
+('Artist Professional', 'Complete toolkit for established artists', 'PROFESSIONAL', 'ARTIST', 999.00, 'MONTHLY', 500, FALSE, 1000, FALSE, 500, FALSE, TRUE, TRUE, TRUE, 1000, FALSE, 100, 4),
+('Artist Enterprise', 'Unlimited access for top-tier artists', 'ENTERPRISE', 'ARTIST', 1999.00, 'MONTHLY', 0, TRUE, 0, TRUE, 0, TRUE, TRUE, TRUE, TRUE, 0, TRUE, 500, 5);
 
-INSERT IGNORE INTO subscription_plans (name, description, plan_type, user_role, price, billing_cycle, max_job_posts, max_messages, max_candidates_view, job_boost_credits, advanced_search, candidate_verification, priority_support, max_file_uploads, max_file_size_mb, sort_order) VALUES
-('Recruiter Free', 'Basic plan for new recruiters', 'FREE', 'RECRUITER', 0.00, 'MONTHLY', 2, 10, 20, 0, FALSE, FALSE, FALSE, 10, 10, 6),
-('Recruiter Basic', 'Essential features for growing recruiters', 'BASIC', 'RECRUITER', 499.00, 'MONTHLY', 10, 50, 100, 2, FALSE, FALSE, FALSE, 50, 25, 7),
-('Recruiter Premium', 'Advanced features for professional recruiters', 'PREMIUM', 'RECRUITER', 999.00, 'MONTHLY', 50, 200, 500, 5, TRUE, TRUE, TRUE, 200, 50, 8),
-('Recruiter Professional', 'Complete toolkit for established recruiters', 'PROFESSIONAL', 'RECRUITER', 1999.00, 'MONTHLY', 200, 1000, 2000, 10, TRUE, TRUE, TRUE, 1000, 100, 9),
-('Recruiter Enterprise', 'Unlimited access for large organizations', 'ENTERPRISE', 'RECRUITER', 4999.00, 'MONTHLY', NULL, NULL, NULL, 25, TRUE, TRUE, TRUE, NULL, 500, 10);
+INSERT IGNORE INTO subscription_plans (name, description, plan_type, user_role, price, billing_cycle, max_job_posts, unlimited_job_posts, max_messages, unlimited_messages, max_candidates_view, unlimited_candidates, job_boost_credits, advanced_search, candidate_verification, priority_support, max_file_uploads, unlimited_uploads, max_file_size_mb, sort_order) VALUES
+('Recruiter Free', 'Basic plan for new recruiters', 'FREE', 'RECRUITER', 0.00, 'MONTHLY', 2, FALSE, 10, FALSE, 20, FALSE, 0, FALSE, FALSE, FALSE, 10, FALSE, 10, 6),
+('Recruiter Basic', 'Essential features for growing recruiters', 'BASIC', 'RECRUITER', 499.00, 'MONTHLY', 10, FALSE, 50, FALSE, 100, FALSE, 2, FALSE, FALSE, FALSE, 50, FALSE, 25, 7),
+('Recruiter Premium', 'Advanced features for professional recruiters', 'PREMIUM', 'RECRUITER', 999.00, 'MONTHLY', 50, FALSE, 200, FALSE, 500, FALSE, 5, TRUE, TRUE, TRUE, 200, FALSE, 50, 8),
+('Recruiter Professional', 'Complete toolkit for established recruiters', 'PROFESSIONAL', 'RECRUITER', 1999.00, 'MONTHLY', 200, FALSE, 1000, FALSE, 2000, FALSE, 10, TRUE, TRUE, TRUE, 1000, FALSE, 100, 9),
+('Recruiter Enterprise', 'Unlimited access for large organizations', 'ENTERPRISE', 'RECRUITER', 4999.00, 'MONTHLY', 0, TRUE, 0, TRUE, 0, TRUE, 25, TRUE, TRUE, TRUE, 0, TRUE, 500, 10);
 
-INSERT IGNORE INTO subscription_plans (name, description, plan_type, user_role, price, billing_cycle, max_auditions, max_applications, max_job_posts, max_messages, max_candidates_view, job_boost_credits, advanced_search, profile_verification, featured_profile, priority_support, max_file_uploads, max_file_size_mb, sort_order) VALUES
-('Unified Basic', 'Basic features for both artists and recruiters', 'BASIC', 'BOTH', 699.00, 'MONTHLY', 15, 30, 5, 30, 50, 1, FALSE, FALSE, FALSE, FALSE, 30, 25, 11),
-('Unified Premium', 'Advanced features for both roles', 'PREMIUM', 'BOTH', 1299.00, 'MONTHLY', 50, 100, 25, 100, 250, 3, TRUE, TRUE, TRUE, TRUE, 100, 50, 12),
-('Unified Professional', 'Complete toolkit for professionals', 'PROFESSIONAL', 'BOTH', 2499.00, 'MONTHLY', 250, 500, 100, 500, 1000, 8, TRUE, TRUE, TRUE, TRUE, 500, 100, 13),
-('Unified Enterprise', 'Unlimited access for organizations', 'ENTERPRISE', 'BOTH', 6999.00, 'MONTHLY', NULL, NULL, NULL, NULL, NULL, 20, TRUE, TRUE, TRUE, TRUE, NULL, 500, 14);
+INSERT IGNORE INTO subscription_plans (name, description, plan_type, user_role, price, billing_cycle, max_auditions, unlimited_auditions, max_applications, unlimited_applications, max_job_posts, unlimited_job_posts, max_messages, unlimited_messages, max_candidates_view, unlimited_candidates, job_boost_credits, advanced_search, profile_verification, featured_profile, priority_support, max_file_uploads, unlimited_uploads, max_file_size_mb, sort_order) VALUES
+('Unified Basic', 'Basic features for both artists and recruiters', 'BASIC', 'BOTH', 699.00, 'MONTHLY', 15, FALSE, 30, FALSE, 5, FALSE, 30, FALSE, 50, FALSE, 1, FALSE, FALSE, FALSE, FALSE, 30, FALSE, 25, 11),
+('Unified Premium', 'Advanced features for both roles', 'PREMIUM', 'BOTH', 1299.00, 'MONTHLY', 50, FALSE, 100, FALSE, 25, FALSE, 100, FALSE, 250, FALSE, 3, TRUE, TRUE, TRUE, TRUE, 100, FALSE, 50, 12),
+('Unified Professional', 'Complete toolkit for professionals', 'PROFESSIONAL', 'BOTH', 2499.00, 'MONTHLY', 250, FALSE, 500, FALSE, 100, FALSE, 500, FALSE, 1000, FALSE, 8, TRUE, TRUE, TRUE, TRUE, 500, FALSE, 100, 13),
+('Unified Enterprise', 'Unlimited access for organizations', 'ENTERPRISE', 'BOTH', 6999.00, 'MONTHLY', 0, TRUE, 0, TRUE, 0, TRUE, 0, TRUE, 0, TRUE, 20, TRUE, TRUE, TRUE, TRUE, 0, TRUE, 500, 14);
 
 -- DANCER FIELDS (Artist Type ID: 1)
 INSERT IGNORE INTO artist_type_fields (artist_type_id, field_name, display_name, field_type, is_required, is_searchable, sort_order) VALUES
