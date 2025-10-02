@@ -8,6 +8,6 @@ import lombok.Data;
 public class OtpRequestDto {
     
     @NotBlank(message = "Mobile number is required")
-    @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "Invalid mobile number format")
+    @Pattern(regexp = "^[6-9]\\d{9}$", message = "Mobile number must be a 10-digit number starting with 6, 7, 8, or 9")
     private String mobile;
 }

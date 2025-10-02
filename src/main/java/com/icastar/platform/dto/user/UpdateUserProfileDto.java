@@ -11,7 +11,7 @@ public class UpdateUserProfileDto {
     @Email(message = "Invalid email format")
     private String email;
     
-    @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "Invalid mobile number format")
+    @Pattern(regexp = "^[6-9]\\d{9}$", message = "Mobile number must be a 10-digit number starting with 6, 7, 8, or 9")
     private String mobile;
     
     @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
