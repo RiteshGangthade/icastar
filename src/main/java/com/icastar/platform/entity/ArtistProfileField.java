@@ -1,6 +1,16 @@
 package com.icastar.platform.entity;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -17,6 +27,7 @@ public class ArtistProfileField extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_profile_id", nullable = false)
+    @JsonBackReference
     private ArtistProfile artistProfile;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -25,16 +36,6 @@ public class ArtistProfileField extends BaseEntity {
 
     @Column(name = "field_value", columnDefinition = "TEXT")
     private String fieldValue;
-
-    @Column(name = "file_url")
-    private String fileUrl;
-
-    @Column(name = "file_name")
-    private String fileName;
-
-    @Column(name = "file_size")
-    private Long fileSize; // File size in bytes
-
-    @Column(name = "mime_type")
-    private String mimeType; // File MIME type
+    
+    // File handling is now managed by Document entity, not stored here
 }

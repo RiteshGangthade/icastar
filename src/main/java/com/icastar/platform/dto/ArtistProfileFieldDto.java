@@ -9,8 +9,5 @@ public class ArtistProfileFieldDto {
     private String fieldName;
     private String displayName;
     private String fieldValue;
-    private String fileUrl;
-    private String fileName;
-    private Long fileSize;
-    private String mimeType;
+    // File handling is now managed by Document entity, not stored here
 }

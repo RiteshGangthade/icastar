@@ -41,17 +41,17 @@ public class UserController {
             
             // Add role-specific profile data
             if (user.getRole() == User.UserRole.ARTIST && user.getArtistProfile() != null) {
-                userProfile.setFirstName(user.getArtistProfile().getFirstName());
-                userProfile.setLastName(user.getArtistProfile().getLastName());
+                userProfile.setFirstName(user.getFirstName());
+                userProfile.setLastName(user.getLastName());
                 userProfile.setBio(user.getArtistProfile().getBio());
                 userProfile.setLocation(user.getArtistProfile().getLocation());
-                userProfile.setProfileImageUrl(user.getArtistProfile().getProfileImageUrl());
+                // Note: Profile images are now handled by Document entity
             } else if (user.getRole() == User.UserRole.RECRUITER && user.getRecruiterProfile() != null) {
                 userProfile.setFirstName(user.getRecruiterProfile().getContactPersonName());
                 userProfile.setLastName(""); // Recruiters don't have last name in contact person
                 userProfile.setBio(user.getRecruiterProfile().getCompanyDescription());
                 userProfile.setLocation(user.getRecruiterProfile().getLocation());
-                userProfile.setProfileImageUrl(user.getRecruiterProfile().getCompanyLogoUrl());
+                // Note: Company logos are now handled by Document entity
             }
 
             Map<String, Object> response = new HashMap<>();
@@ -138,17 +138,17 @@ public class UserController {
             
             // Add role-specific profile data
             if (user.getRole() == User.UserRole.ARTIST && user.getArtistProfile() != null) {
-                userProfile.setFirstName(user.getArtistProfile().getFirstName());
-                userProfile.setLastName(user.getArtistProfile().getLastName());
+                userProfile.setFirstName(user.getFirstName());
+                userProfile.setLastName(user.getLastName());
                 userProfile.setBio(user.getArtistProfile().getBio());
                 userProfile.setLocation(user.getArtistProfile().getLocation());
-                userProfile.setProfileImageUrl(user.getArtistProfile().getProfileImageUrl());
+                // Note: Profile images are now handled by Document entity
             } else if (user.getRole() == User.UserRole.RECRUITER && user.getRecruiterProfile() != null) {
                 userProfile.setFirstName(user.getRecruiterProfile().getContactPersonName());
                 userProfile.setLastName("");
                 userProfile.setBio(user.getRecruiterProfile().getCompanyDescription());
                 userProfile.setLocation(user.getRecruiterProfile().getLocation());
-                userProfile.setProfileImageUrl(user.getRecruiterProfile().getCompanyLogoUrl());
+                // Note: Company logos are now handled by Document entity
             }
 
             Map<String, Object> response = new HashMap<>();

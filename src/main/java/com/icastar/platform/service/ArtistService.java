@@ -91,7 +91,6 @@ public class ArtistService {
         artistProfile.setArtistType(artistType);
         artistProfile.setFirstName(firstName);
         artistProfile.setLastName(lastName);
-        artistProfile.setIsActive(true);
 
         return artistProfileRepository.save(artistProfile);
     }
@@ -100,13 +99,8 @@ public class ArtistService {
         ArtistProfile existingProfile = artistProfileRepository.findById(artistProfileId)
                 .orElseThrow(() -> new RuntimeException("Artist profile not found"));
 
-        // Update fields
-        if (updatedProfile.getFirstName() != null) {
-            existingProfile.setFirstName(updatedProfile.getFirstName());
-        }
-        if (updatedProfile.getLastName() != null) {
-            existingProfile.setLastName(updatedProfile.getLastName());
-        }
+        // Note: firstName and lastName are in User entity, not ArtistProfile
+        // They should be updated through UserService or a separate method
         if (updatedProfile.getStageName() != null) {
             existingProfile.setStageName(updatedProfile.getStageName());
         }
@@ -122,12 +116,8 @@ public class ArtistService {
         if (updatedProfile.getLocation() != null) {
             existingProfile.setLocation(updatedProfile.getLocation());
         }
-        if (updatedProfile.getProfileImageUrl() != null) {
-            existingProfile.setProfileImageUrl(updatedProfile.getProfileImageUrl());
-        }
-        if (updatedProfile.getPortfolioUrls() != null) {
-            existingProfile.setPortfolioUrls(updatedProfile.getPortfolioUrls());
-        }
+        // Note: Profile images and portfolio URLs are now handled by Document entity
+        // They should be uploaded separately using the document upload API
         if (updatedProfile.getSkills() != null) {
             existingProfile.setSkills(updatedProfile.getSkills());
         }
@@ -145,21 +135,22 @@ public class ArtistService {
         ArtistProfile artistProfile = artistProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Artist profile not found"));
 
+        User user = artistProfile.getUser();
         if (updateDto.getFirstName() != null) {
-            artistProfile.setFirstName(updateDto.getFirstName());
+            user.setFirstName(updateDto.getFirstName());
         }
         if (updateDto.getLastName() != null) {
-            artistProfile.setLastName(updateDto.getLastName());
+            user.setLastName(updateDto.getLastName());
         }
+        userRepository.save(user);
         if (updateDto.getBio() != null) {
             artistProfile.setBio(updateDto.getBio());
         }
         if (updateDto.getLocation() != null) {
             artistProfile.setLocation(updateDto.getLocation());
         }
-        if (updateDto.getProfileImageUrl() != null) {
-            artistProfile.setProfileImageUrl(updateDto.getProfileImageUrl());
-        }
+        // Note: Profile images are now handled by Document entity
+        // They should be uploaded separately using the document upload API
 
         artistProfileRepository.save(artistProfile);
     }
@@ -238,36 +229,58 @@ public class ArtistService {
      * @param artistProfileId The ID of the artist profile
      * @param dynamicFields List of dynamic field data
      */
+    @Transactional
     public void saveDynamicFields(Long artistProfileId, List<ArtistProfileFieldDto> dynamicFields) {
         ArtistProfile artistProfile = artistProfileRepository.findById(artistProfileId)
                 .orElseThrow(() -> new RuntimeException("Artist profile not found"));
 
-        // Delete existing dynamic fields for this profile
+        // Get existing fields to check for duplicates
         List<ArtistProfileField> existingFields = artistProfileFieldRepository.findByArtistProfileId(artistProfileId);
-        artistProfileFieldRepository.deleteAll(existingFields);
-
-        // Save new dynamic fields
+        
+        // Process each dynamic field
         for (ArtistProfileFieldDto fieldDto : dynamicFields) {
             if (fieldDto.getFieldValue() != null && !fieldDto.getFieldValue().trim().isEmpty()) {
                 ArtistTypeField artistTypeField = artistTypeFieldRepository.findById(fieldDto.getArtistTypeFieldId())
                         .orElseThrow(() -> new RuntimeException("Artist type field not found with id: " + fieldDto.getArtistTypeFieldId()));
 
-                ArtistProfileField profileField = new ArtistProfileField();
-                profileField.setArtistProfile(artistProfile);
-                profileField.setArtistTypeField(artistTypeField);
-                profileField.setFieldValue(fieldDto.getFieldValue());
-                
-                // Handle file fields
-                if (fieldDto.getFileUrl() != null) {
-                    profileField.setFileUrl(fieldDto.getFileUrl());
-                    profileField.setFileName(fieldDto.getFileName());
-                    profileField.setFileSize(fieldDto.getFileSize());
-                    profileField.setMimeType(fieldDto.getMimeType());
-                }
+                // Check if field already exists
+                Optional<ArtistProfileField> existingField = existingFields.stream()
+                        .filter(field -> field.getArtistTypeField().getId().equals(fieldDto.getArtistTypeFieldId()))
+                        .findFirst();
 
-                artistProfileFieldRepository.save(profileField);
-                log.info("Saved dynamic field '{}' for artist profile {}", artistTypeField.getFieldName(), artistProfileId);
+                if (existingField.isPresent()) {
+                    // Update existing field
+                    ArtistProfileField profileField = existingField.get();
+                    profileField.setFieldValue(fieldDto.getFieldValue());
+                    artistProfileFieldRepository.save(profileField);
+                    log.info("Updated dynamic field '{}' for artist profile {}", artistTypeField.getFieldName(), artistProfileId);
+                } else {
+                    // Create new field
+                    ArtistProfileField profileField = new ArtistProfileField();
+                    profileField.setArtistProfile(artistProfile);
+                    profileField.setArtistTypeField(artistTypeField);
+                    profileField.setFieldValue(fieldDto.getFieldValue());
+                    
+                    // File handling is now managed by Document entity
+
+                    artistProfileFieldRepository.save(profileField);
+                    log.info("Saved dynamic field '{}' for artist profile {}", artistTypeField.getFieldName(), artistProfileId);
+                }
             }
+        }
+
+        // Remove fields that are no longer in the request
+        List<Long> requestedFieldIds = dynamicFields.stream()
+                .map(ArtistProfileFieldDto::getArtistTypeFieldId)
+                .collect(java.util.stream.Collectors.toList());
+        
+        List<ArtistProfileField> fieldsToDelete = existingFields.stream()
+                .filter(field -> !requestedFieldIds.contains(field.getArtistTypeField().getId()))
+                .collect(java.util.stream.Collectors.toList());
+        
+        if (!fieldsToDelete.isEmpty()) {
+            artistProfileFieldRepository.deleteAll(fieldsToDelete);
+            log.info("Deleted {} unused dynamic fields for artist profile {}", fieldsToDelete.size(), artistProfileId);
         }
     }
 
@@ -291,10 +304,7 @@ public class ArtistService {
         dto.setFieldName(field.getArtistTypeField().getFieldName());
         dto.setDisplayName(field.getArtistTypeField().getDisplayName());
         dto.setFieldValue(field.getFieldValue());
-        dto.setFileUrl(field.getFileUrl());
-        dto.setFileName(field.getFileName());
-        dto.setFileSize(field.getFileSize());
-        dto.setMimeType(field.getMimeType());
+        // File handling is now managed by Document entity
         return dto;
     }
 }

@@ -13,7 +13,6 @@ public class JobApplicationDto {
     private String jobTitle;
     private Long artistId;
     private String artistName;
-    private String artistProfileImageUrl;
     private String coverLetter;
     private BigDecimal proposedRate;
     private JobApplication.ApplicationStatus status;
@@ -52,7 +51,6 @@ public class JobApplicationDto {
         if (application.getArtist() != null) {
             this.artistName = application.getArtist().getFirstName() + " " + 
                             application.getArtist().getLastName();
-            this.artistProfileImageUrl = application.getArtist().getProfileImageUrl();
             this.artistBio = application.getArtist().getBio();
             this.artistLocation = application.getArtist().getLocation();
             this.artistExperience = application.getArtist().getExperienceYears() != null ? 

@@ -28,6 +28,8 @@ import java.awt.print.Pageable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/artists")
@@ -40,6 +42,7 @@ public class ArtistController {
     private final ArtistService artistService;
     private final ArtistTypeService artistTypeService;
     private final UserService userService;
+    private final ObjectMapper objectMapper;
 
     @PostMapping("/profile")
     public ResponseEntity<Map<String, Object>> createArtistProfile(@Valid @RequestBody CreateArtistProfileDto createDto) {
@@ -58,10 +61,15 @@ public class ArtistController {
                 return ResponseEntity.badRequest().body(response);
             }
 
+            // Update user fields
+            user.setFirstName(createDto.getFirstName());
+            user.setLastName(createDto.getLastName());
+            userService.save(user);
+
             ArtistProfile artistProfile = artistService.createArtistProfile(
                     user.getId(), 
-                    createDto.getArtistTypeId(), 
-                    createDto.getFirstName(), 
+                    createDto.getArtistTypeId(),
+                    createDto.getFirstName(),
                     createDto.getLastName()
             );
 
@@ -81,20 +89,58 @@ public class ArtistController {
             if (createDto.getLocation() != null) {
                 artistProfile.setLocation(createDto.getLocation());
             }
-            if (createDto.getProfileImageUrl() != null) {
-                artistProfile.setProfileImageUrl(createDto.getProfileImageUrl());
-            }
-            if (createDto.getPortfolioUrls() != null) {
-                artistProfile.setPortfolioUrls(String.join(",", createDto.getPortfolioUrls()));
-            }
+            // Note: Profile images and portfolio URLs are now handled by Document entity
+            // They should be uploaded separately using the document upload API
             if (createDto.getSkills() != null) {
-                artistProfile.setSkills(String.join(",", createDto.getSkills()));
+                try {
+                    artistProfile.setSkills(objectMapper.writeValueAsString(createDto.getSkills()));
+                } catch (JsonProcessingException e) {
+                    log.error("Error converting skills to JSON", e);
+                    throw new RuntimeException("Error processing skills data");
+                }
             }
             if (createDto.getExperienceYears() != null) {
                 artistProfile.setExperienceYears(createDto.getExperienceYears());
             }
             if (createDto.getHourlyRate() != null) {
                 artistProfile.setHourlyRate(createDto.getHourlyRate());
+            }
+            
+            // Handle other JSON fields
+            if (createDto.getLanguagesSpoken() != null) {
+                try {
+                    artistProfile.setLanguagesSpoken(objectMapper.writeValueAsString(createDto.getLanguagesSpoken()));
+                } catch (JsonProcessingException e) {
+                    log.error("Error converting languagesSpoken to JSON", e);
+                    throw new RuntimeException("Error processing languagesSpoken data");
+                }
+            }
+            
+            if (createDto.getComfortableAreas() != null) {
+                try {
+                    artistProfile.setComfortableAreas(objectMapper.writeValueAsString(createDto.getComfortableAreas()));
+                } catch (JsonProcessingException e) {
+                    log.error("Error converting comfortableAreas to JSON", e);
+                    throw new RuntimeException("Error processing comfortableAreas data");
+                }
+            }
+            
+            if (createDto.getProjectsWorked() != null) {
+                try {
+                    artistProfile.setProjectsWorked(objectMapper.writeValueAsString(createDto.getProjectsWorked()));
+                } catch (JsonProcessingException e) {
+                    log.error("Error converting projectsWorked to JSON", e);
+                    throw new RuntimeException("Error processing projectsWorked data");
+                }
+            }
+            
+            if (createDto.getTravelCities() != null) {
+                try {
+                    artistProfile.setTravelCities(objectMapper.writeValueAsString(createDto.getTravelCities()));
+                } catch (JsonProcessingException e) {
+                    log.error("Error converting travelCities to JSON", e);
+                    throw new RuntimeException("Error processing travelCities data");
+                }
             }
 
             artistService.save(artistProfile);
@@ -193,19 +239,70 @@ public class ArtistController {
                     .orElseThrow(() -> new RuntimeException("Artist profile not found"));
 
             // Create updated profile object
+            // Update user fields
+            User profileUser = existingProfile.getUser();
+            if (updateDto.getFirstName() != null) {
+                profileUser.setFirstName(updateDto.getFirstName());
+            }
+            if (updateDto.getLastName() != null) {
+                profileUser.setLastName(updateDto.getLastName());
+            }
+            userService.save(profileUser);
+
             ArtistProfile updatedProfile = new ArtistProfile();
-            updatedProfile.setFirstName(updateDto.getFirstName());
-            updatedProfile.setLastName(updateDto.getLastName());
             updatedProfile.setStageName(updateDto.getStageName());
             updatedProfile.setBio(updateDto.getBio());
             updatedProfile.setDateOfBirth(updateDto.getDateOfBirth());
             updatedProfile.setGender(updateDto.getGender());
             updatedProfile.setLocation(updateDto.getLocation());
-            updatedProfile.setProfileImageUrl(updateDto.getProfileImageUrl());
-            updatedProfile.setPortfolioUrls(updateDto.getPortfolioUrls() != null ? String.join(",", updateDto.getPortfolioUrls()) : null);
-            updatedProfile.setSkills(updateDto.getSkills() != null ? String.join(",", updateDto.getSkills()) : null);
+            // Note: Profile images and portfolio URLs are now handled by Document entity
+            if (updateDto.getSkills() != null) {
+                try {
+                    updatedProfile.setSkills(objectMapper.writeValueAsString(updateDto.getSkills()));
+                } catch (JsonProcessingException e) {
+                    log.error("Error converting skills to JSON", e);
+                    throw new RuntimeException("Error processing skills data");
+                }
+            }
             updatedProfile.setExperienceYears(updateDto.getExperienceYears());
             updatedProfile.setHourlyRate(updateDto.getHourlyRate());
+            
+            // Handle other JSON fields
+            if (updateDto.getLanguagesSpoken() != null) {
+                try {
+                    updatedProfile.setLanguagesSpoken(objectMapper.writeValueAsString(updateDto.getLanguagesSpoken()));
+                } catch (JsonProcessingException e) {
+                    log.error("Error converting languagesSpoken to JSON", e);
+                    throw new RuntimeException("Error processing languagesSpoken data");
+                }
+            }
+            
+            if (updateDto.getComfortableAreas() != null) {
+                try {
+                    updatedProfile.setComfortableAreas(objectMapper.writeValueAsString(updateDto.getComfortableAreas()));
+                } catch (JsonProcessingException e) {
+                    log.error("Error converting comfortableAreas to JSON", e);
+                    throw new RuntimeException("Error processing comfortableAreas data");
+                }
+            }
+            
+            if (updateDto.getProjectsWorked() != null) {
+                try {
+                    updatedProfile.setProjectsWorked(objectMapper.writeValueAsString(updateDto.getProjectsWorked()));
+                } catch (JsonProcessingException e) {
+                    log.error("Error converting projectsWorked to JSON", e);
+                    throw new RuntimeException("Error processing projectsWorked data");
+                }
+            }
+            
+            if (updateDto.getTravelCities() != null) {
+                try {
+                    updatedProfile.setTravelCities(objectMapper.writeValueAsString(updateDto.getTravelCities()));
+                } catch (JsonProcessingException e) {
+                    log.error("Error converting travelCities to JSON", e);
+                    throw new RuntimeException("Error processing travelCities data");
+                }
+            }
 
             ArtistProfile savedProfile = artistService.updateArtistProfile(existingProfile.getId(), updatedProfile);
 

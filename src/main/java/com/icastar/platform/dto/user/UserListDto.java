@@ -15,7 +15,6 @@ public class UserListDto {
     private Boolean isVerified;
     private LocalDateTime lastLogin;
     private LocalDateTime createdAt;
-    private String profileImageUrl;
     private String firstName;
     private String lastName;
 
@@ -31,11 +30,9 @@ public class UserListDto {
         
         // Set profile-specific fields based on role
         if (user.getRole() == User.UserRole.ARTIST && user.getArtistProfile() != null) {
-            this.profileImageUrl = user.getArtistProfile().getProfileImageUrl();
             this.firstName = user.getArtistProfile().getFirstName();
             this.lastName = user.getArtistProfile().getLastName();
         } else if (user.getRole() == User.UserRole.RECRUITER && user.getRecruiterProfile() != null) {
-            this.profileImageUrl = user.getRecruiterProfile().getCompanyLogoUrl();
             this.firstName = user.getRecruiterProfile().getContactPersonName();
             this.lastName = user.getRecruiterProfile().getCompanyName();
         }

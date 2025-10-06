@@ -37,10 +37,6 @@ public class CreateArtistProfileDto {
     @Size(max = 255, message = "Location must not exceed 255 characters")
     private String location;
     
-    private String profileImageUrl;
-    
-    private List<String> portfolioUrls;
-    
     private List<String> skills;
     
     private Integer experienceYears;
@@ -48,4 +44,38 @@ public class CreateArtistProfileDto {
     private Double hourlyRate;
     
     private List<ArtistProfileFieldDto> dynamicFields;
+    
+    // Actor-specific fields
+    private String city;
+    private ArtistProfile.MaritalStatus maritalStatus;
+    private String phone;
+    private List<String> languagesSpoken;
+    // Document URLs are now handled by Document entity, not stored directly here
+    private List<String> comfortableAreas;
+    private List<ProjectDto> projectsWorked;
+    private Double weight;
+    private Double height;
+    private String hairColor;
+    private String hairLength;
+    private Boolean hasTattoo;
+    private Boolean hasMole;
+    private String shoeSize;
+    private List<String> travelCities;
+    
+    // Nested DTOs
+    @Data
+    public static class ProfilePictureDto {
+        private String url; // S3 URL for profile picture
+        private ProfilePictureType type;
+        
+        public enum ProfilePictureType {
+            LEFT_PROFILE, RIGHT_PROFILE, FRONT_PROFILE
+        }
+    }
+    
+    @Data
+    public static class ProjectDto {
+        private String name;
+        private String url; // S3 URL for project reference
+    }
 }

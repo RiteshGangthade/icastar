@@ -33,7 +33,7 @@ public interface ArtistProfileRepository extends JpaRepository<ArtistProfile, Lo
     @Query("SELECT ap FROM ArtistProfile ap WHERE ap.verificationRequestedAt IS NOT NULL AND ap.isVerifiedBadge = false")
     List<ArtistProfile> findPendingVerificationRequests();
 
-    @Query("SELECT ap FROM ArtistProfile ap WHERE ap.stageName LIKE %:stageName% OR ap.firstName LIKE %:firstName% OR ap.lastName LIKE %:lastName%")
+    @Query("SELECT ap FROM ArtistProfile ap WHERE ap.stageName LIKE %:stageName% OR ap.user.firstName LIKE %:firstName% OR ap.user.lastName LIKE %:lastName%")
     List<ArtistProfile> findByStageNameOrNameContaining(@Param("stageName") String stageName, 
                                                        @Param("firstName") String firstName, 
                                                        @Param("lastName") String lastName);
@@ -59,4 +59,12 @@ public interface ArtistProfileRepository extends JpaRepository<ArtistProfile, Lo
 
     @Query("SELECT ap FROM ArtistProfile ap WHERE ap.artistType.name = :artistTypeName AND ap.user.status = 'ACTIVE' AND ap.isActive = true")
     List<ArtistProfile> findActiveArtistsByTypeName(@Param("artistTypeName") String artistTypeName);
+
+    @Query("SELECT ap FROM ArtistProfile ap WHERE " +
+           "LOWER(ap.stageName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(ap.user.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(ap.user.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(ap.skills) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(ap.bio) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    List<ArtistProfile> findBySearchTerm(@Param("searchTerm") String searchTerm);
 }
