@@ -3,9 +3,9 @@ package com.icastar.platform.controller;
 import com.icastar.platform.dto.admin.JobFilterDto;
 import com.icastar.platform.dto.admin.JobManagementDto;
 import com.icastar.platform.dto.admin.JobVisibilityToggleDto;
-import com.icastar.platform.dto.job.JobPostDto;
+import com.icastar.platform.dto.job.JobDto;
 import com.icastar.platform.dto.job.UpdateJobPostDto;
-import com.icastar.platform.entity.JobPost;
+import com.icastar.platform.entity.Job;
 import com.icastar.platform.entity.User;
 import com.icastar.platform.service.AdminJobManagementService;
 import com.icastar.platform.service.JobService;
@@ -218,8 +218,8 @@ public class AdminJobManagementController {
     public ResponseEntity<Map<String, Object>> updateJobPost(@PathVariable Long jobId, @RequestBody UpdateJobPostDto updateDto) {
         log.info("Admin updating job post: {}", jobId);
         try {
-            JobPost jobPost = jobService.updateJobPost(jobId, null, updateDto);
-            JobPostDto jobDto = new JobPostDto(jobPost);
+            Job job = jobService.updateJobPost(jobId, null, updateDto);
+            JobDto jobDto = new JobDto(job);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", jobDto);
@@ -249,8 +249,8 @@ public class AdminJobManagementController {
     public ResponseEntity<Map<String, Object>> getFeaturedJobs(@RequestParam(defaultValue = "10") int limit) {
         log.info("Admin fetching featured jobs with limit: {}", limit);
         try {
-            List<JobPost> featuredJobs = jobService.getFeaturedJobs(limit);
-            List<JobPostDto> jobDtos = featuredJobs.stream().map(JobPostDto::new).collect(Collectors.toList());
+            List<Job> featuredJobs = jobService.getFeaturedJobs(limit);
+            List<JobDto> jobDtos = featuredJobs.stream().map(JobDto::new).collect(Collectors.toList());
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", jobDtos);
@@ -265,8 +265,8 @@ public class AdminJobManagementController {
     public ResponseEntity<Map<String, Object>> getRecentJobs(@RequestParam(defaultValue = "10") int limit) {
         log.info("Admin fetching recent jobs with limit: {}", limit);
         try {
-            List<JobPost> recentJobs = jobService.getRecentJobs(limit);
-            List<JobPostDto> jobDtos = recentJobs.stream().map(JobPostDto::new).collect(Collectors.toList());
+            List<Job> recentJobs = jobService.getRecentJobs(limit);
+            List<JobDto> jobDtos = recentJobs.stream().map(JobDto::new).collect(Collectors.toList());
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", jobDtos);

@@ -1,9 +1,9 @@
 package com.icastar.platform.controller;
 
 import com.icastar.platform.dto.job.CreateJobPostDto;
-import com.icastar.platform.dto.job.JobPostDto;
+import com.icastar.platform.dto.job.JobDto;
 import com.icastar.platform.dto.job.UpdateJobPostDto;
-import com.icastar.platform.entity.JobPost;
+import com.icastar.platform.entity.Job;
 import com.icastar.platform.entity.User;
 import com.icastar.platform.service.JobService;
 import com.icastar.platform.service.UserService;
@@ -32,7 +32,7 @@ public class RecruiterJobController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<JobPostDto> createJobPost(@Valid @RequestBody CreateJobPostDto createDto) {
+    public ResponseEntity<JobDto> createJobPost(@Valid @RequestBody CreateJobPostDto createDto) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
@@ -46,8 +46,8 @@ public class RecruiterJobController {
 
             log.info("Creating job post for recruiter: {}", email);
 
-            JobPost jobPost = jobService.createJobPost(recruiter.getId(), createDto);
-            JobPostDto jobDto = new JobPostDto(jobPost);
+            Job job = jobService.createJobPost(recruiter.getId(), createDto);
+            JobDto jobDto = new JobDto(job);
 
             return ResponseEntity.ok(jobDto);
         } catch (Exception e) {
@@ -57,7 +57,7 @@ public class RecruiterJobController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<JobPostDto>> getMyJobPosts(
+    public ResponseEntity<Page<JobDto>> getMyJobPosts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -80,8 +80,8 @@ public class RecruiterJobController {
                     Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
             
             Pageable pageable = PageRequest.of(page, size, sort);
-            Page<JobPost> jobs = jobService.findByRecruiter(recruiter.getId(), pageable);
-            Page<JobPostDto> jobDtos = jobs.map(JobPostDto::new);
+            Page<Job> jobs = jobService.findByRecruiter(recruiter.getId(), pageable);
+            Page<JobDto> jobDtos = jobs.map(JobDto::new);
 
             return ResponseEntity.ok(jobDtos);
         } catch (Exception e) {
@@ -91,7 +91,7 @@ public class RecruiterJobController {
     }
 
     @GetMapping("/{jobId}")
-    public ResponseEntity<JobPostDto> getMyJobPost(@PathVariable Long jobId) {
+    public ResponseEntity<JobDto> getMyJobPost(@PathVariable Long jobId) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
@@ -105,7 +105,7 @@ public class RecruiterJobController {
 
             log.info("Fetching job post {} for recruiter: {}", jobId, email);
 
-            JobPost job = jobService.findById(jobId)
+            Job job = jobService.findById(jobId)
                     .orElseThrow(() -> new RuntimeException("Job not found with id: " + jobId));
 
             // Verify ownership
@@ -113,7 +113,7 @@ public class RecruiterJobController {
                 throw new RuntimeException("You don't have permission to view this job post");
             }
 
-            JobPostDto jobDto = new JobPostDto(job);
+            JobDto jobDto = new JobDto(job);
 
             return ResponseEntity.ok(jobDto);
         } catch (Exception e) {
@@ -123,7 +123,7 @@ public class RecruiterJobController {
     }
 
     @PutMapping("/{jobId}")
-    public ResponseEntity<JobPostDto> updateJobPost(
+    public ResponseEntity<JobDto> updateJobPost(
             @PathVariable Long jobId,
             @Valid @RequestBody UpdateJobPostDto updateDto) {
         
@@ -140,8 +140,8 @@ public class RecruiterJobController {
 
             log.info("Updating job post {} for recruiter: {}", jobId, email);
 
-            JobPost jobPost = jobService.updateJobPost(jobId, recruiter.getId(), updateDto);
-            JobPostDto jobDto = new JobPostDto(jobPost);
+            Job job = jobService.updateJobPost(jobId, recruiter.getId(), updateDto);
+            JobDto jobDto = new JobDto(job);
 
             return ResponseEntity.ok(jobDto);
         } catch (Exception e) {
@@ -178,7 +178,7 @@ public class RecruiterJobController {
     }
 
     @PostMapping("/{jobId}/toggle-visibility")
-    public ResponseEntity<JobPostDto> toggleJobVisibility(@PathVariable Long jobId) {
+    public ResponseEntity<JobDto> toggleJobVisibility(@PathVariable Long jobId) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
@@ -192,8 +192,8 @@ public class RecruiterJobController {
 
             log.info("Toggling visibility for job post {} for recruiter: {}", jobId, email);
 
-            JobPost jobPost = jobService.toggleJobVisibility(jobId, recruiter.getId());
-            JobPostDto jobDto = new JobPostDto(jobPost);
+            Job job = jobService.toggleJobVisibility(jobId, recruiter.getId());
+            JobDto jobDto = new JobDto(job);
 
             return ResponseEntity.ok(jobDto);
         } catch (Exception e) {

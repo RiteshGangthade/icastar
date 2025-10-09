@@ -111,8 +111,8 @@ public class AdminApplicationController {
         Map<String, Object> stats = new HashMap<>();
         
         stats.put("totalApplications", jobApplicationService.getTotalApplicationsCount());
-        stats.put("pendingApplications", jobApplicationService.getApplicationsCountByStatus(JobApplication.ApplicationStatus.PENDING));
-        stats.put("acceptedApplications", jobApplicationService.getApplicationsCountByStatus(JobApplication.ApplicationStatus.ACCEPTED));
+        stats.put("pendingApplications", jobApplicationService.getApplicationsCountByStatus(JobApplication.ApplicationStatus.UNDER_REVIEW));
+        stats.put("acceptedApplications", jobApplicationService.getApplicationsCountByStatus(JobApplication.ApplicationStatus.SELECTED));
         stats.put("rejectedApplications", jobApplicationService.getApplicationsCountByStatus(JobApplication.ApplicationStatus.REJECTED));
         
         return ResponseEntity.ok(stats);
@@ -137,7 +137,7 @@ public class AdminApplicationController {
         log.info("Admin fetching pending applications");
         
         List<JobApplication> pendingApplications = jobApplicationService.findByJobPostAndStatus(
-            null, JobApplication.ApplicationStatus.PENDING);
+            null, JobApplication.ApplicationStatus.UNDER_REVIEW);
         
         List<JobApplicationDto> applicationDtos = pendingApplications.stream()
                 .map(JobApplicationDto::new)

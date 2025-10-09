@@ -196,7 +196,7 @@ public class RecruiterApplicationController {
             log.info("Fetching pending applications for recruiter: {}", email);
 
             List<JobApplication> pendingApplications = jobApplicationService.findByRecruiterAndStatus(
-                recruiter.getId(), JobApplication.ApplicationStatus.PENDING);
+                recruiter.getId(), JobApplication.ApplicationStatus.UNDER_REVIEW);
             
             List<JobApplicationDto> applicationDtos = pendingApplications.stream()
                     .map(JobApplicationDto::new)
@@ -226,8 +226,8 @@ public class RecruiterApplicationController {
 
             Map<String, Object> stats = new HashMap<>();
             stats.put("totalApplications", jobApplicationService.getApplicationsCountByRecruiter(recruiter.getId()));
-            stats.put("pendingApplications", jobApplicationService.getApplicationsCountByStatus(JobApplication.ApplicationStatus.PENDING));
-            stats.put("acceptedApplications", jobApplicationService.getApplicationsCountByStatus(JobApplication.ApplicationStatus.ACCEPTED));
+            stats.put("pendingApplications", jobApplicationService.getApplicationsCountByStatus(JobApplication.ApplicationStatus.UNDER_REVIEW));
+            stats.put("acceptedApplications", jobApplicationService.getApplicationsCountByStatus(JobApplication.ApplicationStatus.SELECTED));
             stats.put("rejectedApplications", jobApplicationService.getApplicationsCountByStatus(JobApplication.ApplicationStatus.REJECTED));
 
             return ResponseEntity.ok(stats);

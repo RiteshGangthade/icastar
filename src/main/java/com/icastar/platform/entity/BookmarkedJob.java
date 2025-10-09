@@ -13,12 +13,12 @@ import java.time.LocalDateTime;
 public class BookmarkedJob extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-increment primary key
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_post_id", nullable = false)
-    private JobPost jobPost;
+    @JoinColumn(name = "job_id", nullable = false)
+    private Job job;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id", nullable = false)
@@ -27,6 +27,6 @@ public class BookmarkedJob extends BaseEntity {
     @Column(name = "bookmarked_at", nullable = false)
     private LocalDateTime bookmarkedAt;
 
-    @Column(name = "notes")
-    private String notes;
+    @Column(name = "notes", columnDefinition = "TEXT")
+    private String notes; // Personal notes about the job
 }

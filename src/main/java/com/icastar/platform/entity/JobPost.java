@@ -94,8 +94,9 @@ public class JobPost extends BaseEntity {
     @OneToMany(mappedBy = "jobPost", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<JobApplication> applications;
 
-    @OneToMany(mappedBy = "jobPost", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<BookmarkedJob> bookmarkedJobs;
+    // Note: BookmarkedJob is mapped to Job entity, not JobPost
+    // @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // private List<BookmarkedJob> bookmarkedJobs;
 
     public enum JobType {
         FULL_TIME, PART_TIME, CONTRACT, FREELANCE, INTERNSHIP

@@ -43,7 +43,8 @@ public class JobApplicationDto {
         this.jobTitle = application.getJobPost().getTitle();
         this.artistId = application.getArtist().getId();
         this.coverLetter = application.getCoverLetter();
-        this.proposedRate = application.getProposedRate();
+        this.proposedRate = application.getExpectedSalary() != null ? 
+            BigDecimal.valueOf(application.getExpectedSalary()) : null;
         this.status = application.getStatus();
         this.appliedAt = application.getAppliedAt();
         this.updatedAt = application.getUpdatedAt();
