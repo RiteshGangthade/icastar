@@ -3,6 +3,7 @@ package com.icastar.platform.dto.job;
 import lombok.Data;
 
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,8 +16,8 @@ public class BookmarkedJobDto {
     private String jobLocation;
     private String jobType;
     private String experienceLevel;
-    private Double budgetMin;
-    private Double budgetMax;
+    private BigDecimal budgetMin;
+    private BigDecimal budgetMax;
     private String currency;
     private Boolean isRemote;
     private Boolean isUrgent;

@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/bookmarks")
+@RequestMapping("/bookmarks")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Bookmarked Jobs Management", description = "APIs for managing bookmarked jobs")
@@ -63,10 +63,32 @@ public class BookmarkedJobController {
             CreateBookmarkDto bookmarkDto = createDto != null ? createDto : new CreateBookmarkDto();
             BookmarkedJob bookmark = bookmarkedJobService.bookmarkJob(artistProfile.getId(), jobId, bookmarkDto);
 
+            // Convert entity to DTO to avoid Jackson serialization issues
+            BookmarkedJobDto bookmarkResponseDto = new BookmarkedJobDto();
+            bookmarkResponseDto.setId(bookmark.getId());
+            bookmarkResponseDto.setJobId(bookmark.getJob().getId());
+            bookmarkResponseDto.setJobTitle(bookmark.getJob().getTitle());
+            bookmarkResponseDto.setJobDescription(bookmark.getJob().getDescription());
+            bookmarkResponseDto.setJobLocation(bookmark.getJob().getLocation());
+            bookmarkResponseDto.setJobType(bookmark.getJob().getJobType().toString());
+            bookmarkResponseDto.setExperienceLevel(bookmark.getJob().getExperienceLevel().toString());
+            bookmarkResponseDto.setBudgetMin(bookmark.getJob().getBudgetMin());
+            bookmarkResponseDto.setBudgetMax(bookmark.getJob().getBudgetMax());
+            bookmarkResponseDto.setCurrency(bookmark.getJob().getCurrency());
+            bookmarkResponseDto.setIsRemote(bookmark.getJob().getIsRemote());
+            bookmarkResponseDto.setIsUrgent(bookmark.getJob().getIsUrgent());
+            bookmarkResponseDto.setIsFeatured(bookmark.getJob().getIsFeatured());
+            bookmarkResponseDto.setStatus(bookmark.getJob().getStatus().toString());
+            bookmarkResponseDto.setApplicationsCount(bookmark.getJob().getApplicationsCount());
+            bookmarkResponseDto.setBookmarkedAt(bookmark.getBookmarkedAt());
+            bookmarkResponseDto.setNotes(bookmark.getNotes());
+            bookmarkResponseDto.setCreatedAt(bookmark.getCreatedAt());
+            bookmarkResponseDto.setUpdatedAt(bookmark.getUpdatedAt());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Job bookmarked successfully");
-            response.put("data", bookmark);
+            response.put("data", bookmarkResponseDto);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -137,9 +159,36 @@ public class BookmarkedJobController {
                 );
             }
 
+            // Convert entities to DTOs to avoid Jackson serialization issues
+            List<BookmarkedJobDto> bookmarkDtos = bookmarks.getContent().stream()
+                    .map(bookmark -> {
+                        BookmarkedJobDto dto = new BookmarkedJobDto();
+                        dto.setId(bookmark.getId());
+                        dto.setJobId(bookmark.getJob().getId());
+                        dto.setJobTitle(bookmark.getJob().getTitle());
+                        dto.setJobDescription(bookmark.getJob().getDescription());
+                        dto.setJobLocation(bookmark.getJob().getLocation());
+                        dto.setJobType(bookmark.getJob().getJobType().toString());
+                        dto.setExperienceLevel(bookmark.getJob().getExperienceLevel().toString());
+                        dto.setBudgetMin(bookmark.getJob().getBudgetMin());
+                        dto.setBudgetMax(bookmark.getJob().getBudgetMax());
+                        dto.setCurrency(bookmark.getJob().getCurrency());
+                        dto.setIsRemote(bookmark.getJob().getIsRemote());
+                        dto.setIsUrgent(bookmark.getJob().getIsUrgent());
+                        dto.setIsFeatured(bookmark.getJob().getIsFeatured());
+                        dto.setStatus(bookmark.getJob().getStatus().toString());
+                        dto.setApplicationsCount(bookmark.getJob().getApplicationsCount());
+                        dto.setBookmarkedAt(bookmark.getBookmarkedAt());
+                        dto.setNotes(bookmark.getNotes());
+                        dto.setCreatedAt(bookmark.getCreatedAt());
+                        dto.setUpdatedAt(bookmark.getUpdatedAt());
+                        return dto;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", bookmarks.getContent());
+            response.put("data", bookmarkDtos);
             response.put("totalElements", bookmarks.getTotalElements());
             response.put("totalPages", bookmarks.getTotalPages());
             response.put("currentPage", bookmarks.getNumber());
@@ -171,9 +220,36 @@ public class BookmarkedJobController {
 
             List<BookmarkedJob> bookmarks = bookmarkedJobService.findBookmarksWithNotes(artistProfile);
 
+            // Convert entities to DTOs to avoid Jackson serialization issues
+            List<BookmarkedJobDto> bookmarkDtos = bookmarks.stream()
+                    .map(bookmark -> {
+                        BookmarkedJobDto dto = new BookmarkedJobDto();
+                        dto.setId(bookmark.getId());
+                        dto.setJobId(bookmark.getJob().getId());
+                        dto.setJobTitle(bookmark.getJob().getTitle());
+                        dto.setJobDescription(bookmark.getJob().getDescription());
+                        dto.setJobLocation(bookmark.getJob().getLocation());
+                        dto.setJobType(bookmark.getJob().getJobType().toString());
+                        dto.setExperienceLevel(bookmark.getJob().getExperienceLevel().toString());
+                        dto.setBudgetMin(bookmark.getJob().getBudgetMin());
+                        dto.setBudgetMax(bookmark.getJob().getBudgetMax());
+                        dto.setCurrency(bookmark.getJob().getCurrency());
+                        dto.setIsRemote(bookmark.getJob().getIsRemote());
+                        dto.setIsUrgent(bookmark.getJob().getIsUrgent());
+                        dto.setIsFeatured(bookmark.getJob().getIsFeatured());
+                        dto.setStatus(bookmark.getJob().getStatus().toString());
+                        dto.setApplicationsCount(bookmark.getJob().getApplicationsCount());
+                        dto.setBookmarkedAt(bookmark.getBookmarkedAt());
+                        dto.setNotes(bookmark.getNotes());
+                        dto.setCreatedAt(bookmark.getCreatedAt());
+                        dto.setUpdatedAt(bookmark.getUpdatedAt());
+                        return dto;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", bookmarks);
+            response.put("data", bookmarkDtos);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -195,10 +271,32 @@ public class BookmarkedJobController {
         try {
             BookmarkedJob bookmark = bookmarkedJobService.updateBookmark(bookmarkId, updateDto);
 
+            // Convert entity to DTO to avoid Jackson serialization issues
+            BookmarkedJobDto bookmarkResponseDto = new BookmarkedJobDto();
+            bookmarkResponseDto.setId(bookmark.getId());
+            bookmarkResponseDto.setJobId(bookmark.getJob().getId());
+            bookmarkResponseDto.setJobTitle(bookmark.getJob().getTitle());
+            bookmarkResponseDto.setJobDescription(bookmark.getJob().getDescription());
+            bookmarkResponseDto.setJobLocation(bookmark.getJob().getLocation());
+            bookmarkResponseDto.setJobType(bookmark.getJob().getJobType().toString());
+            bookmarkResponseDto.setExperienceLevel(bookmark.getJob().getExperienceLevel().toString());
+            bookmarkResponseDto.setBudgetMin(bookmark.getJob().getBudgetMin());
+            bookmarkResponseDto.setBudgetMax(bookmark.getJob().getBudgetMax());
+            bookmarkResponseDto.setCurrency(bookmark.getJob().getCurrency());
+            bookmarkResponseDto.setIsRemote(bookmark.getJob().getIsRemote());
+            bookmarkResponseDto.setIsUrgent(bookmark.getJob().getIsUrgent());
+            bookmarkResponseDto.setIsFeatured(bookmark.getJob().getIsFeatured());
+            bookmarkResponseDto.setStatus(bookmark.getJob().getStatus().toString());
+            bookmarkResponseDto.setApplicationsCount(bookmark.getJob().getApplicationsCount());
+            bookmarkResponseDto.setBookmarkedAt(bookmark.getBookmarkedAt());
+            bookmarkResponseDto.setNotes(bookmark.getNotes());
+            bookmarkResponseDto.setCreatedAt(bookmark.getCreatedAt());
+            bookmarkResponseDto.setUpdatedAt(bookmark.getUpdatedAt());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Bookmark updated successfully");
-            response.put("data", bookmark);
+            response.put("data", bookmarkResponseDto);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

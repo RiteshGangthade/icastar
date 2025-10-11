@@ -65,10 +65,40 @@ public class JobApplicationController {
 
             JobApplication application = jobApplicationService.createApplication(artistProfile.getId(), createDto);
 
+            // Convert entity to DTO to avoid Jackson serialization issues
+            JobApplicationDto applicationDto = new JobApplicationDto();
+            applicationDto.setId(application.getId());
+            applicationDto.setJobId(application.getJob().getId());
+            applicationDto.setJobTitle(application.getJob().getTitle());
+            applicationDto.setArtistId(application.getArtist().getId());
+            applicationDto.setArtistName(application.getArtist().getFirstName() + " " + application.getArtist().getLastName());
+            applicationDto.setArtistEmail(application.getArtist().getUser().getEmail());
+            applicationDto.setStatus(application.getStatus());
+            applicationDto.setCoverLetter(application.getCoverLetter());
+            applicationDto.setExpectedSalary(application.getExpectedSalary());
+            applicationDto.setAvailabilityDate(application.getAvailabilityDate());
+            applicationDto.setPortfolioUrl(application.getPortfolioUrl());
+            applicationDto.setResumeUrl(application.getResumeUrl());
+            applicationDto.setDemoReelUrl(application.getDemoReelUrl());
+            applicationDto.setAppliedAt(application.getAppliedAt());
+            applicationDto.setReviewedAt(application.getReviewedAt());
+            applicationDto.setInterviewScheduledAt(application.getInterviewScheduledAt());
+            applicationDto.setInterviewNotes(application.getInterviewNotes());
+            applicationDto.setRejectionReason(application.getRejectionReason());
+            applicationDto.setFeedback(application.getFeedback());
+            applicationDto.setRating(application.getRating());
+            applicationDto.setIsShortlisted(application.getIsShortlisted());
+            applicationDto.setIsHired(application.getIsHired());
+            applicationDto.setHiredAt(application.getHiredAt());
+            applicationDto.setContractUrl(application.getContractUrl());
+            applicationDto.setNotes(application.getNotes());
+            applicationDto.setCreatedAt(application.getCreatedAt());
+            applicationDto.setUpdatedAt(application.getUpdatedAt());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Application submitted successfully");
-            response.put("data", application);
+            response.put("data", applicationDto);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -133,9 +163,44 @@ public class JobApplicationController {
                 );
             }
 
+            // Convert entities to DTOs to avoid Jackson serialization issues
+            List<JobApplicationDto> applicationDtos = applications.getContent().stream()
+                    .map(application -> {
+                        JobApplicationDto dto = new JobApplicationDto();
+                        dto.setId(application.getId());
+                        dto.setJobId(application.getJob().getId());
+                        dto.setJobTitle(application.getJob().getTitle());
+                        dto.setArtistId(application.getArtist().getId());
+                        dto.setArtistName(application.getArtist().getFirstName() + " " + application.getArtist().getLastName());
+                        dto.setArtistEmail(application.getArtist().getUser().getEmail());
+                        dto.setStatus(application.getStatus());
+                        dto.setCoverLetter(application.getCoverLetter());
+                        dto.setExpectedSalary(application.getExpectedSalary());
+                        dto.setAvailabilityDate(application.getAvailabilityDate());
+                        dto.setPortfolioUrl(application.getPortfolioUrl());
+                        dto.setResumeUrl(application.getResumeUrl());
+                        dto.setDemoReelUrl(application.getDemoReelUrl());
+                        dto.setAppliedAt(application.getAppliedAt());
+                        dto.setReviewedAt(application.getReviewedAt());
+                        dto.setInterviewScheduledAt(application.getInterviewScheduledAt());
+                        dto.setInterviewNotes(application.getInterviewNotes());
+                        dto.setRejectionReason(application.getRejectionReason());
+                        dto.setFeedback(application.getFeedback());
+                        dto.setRating(application.getRating());
+                        dto.setIsShortlisted(application.getIsShortlisted());
+                        dto.setIsHired(application.getIsHired());
+                        dto.setHiredAt(application.getHiredAt());
+                        dto.setContractUrl(application.getContractUrl());
+                        dto.setNotes(application.getNotes());
+                        dto.setCreatedAt(application.getCreatedAt());
+                        dto.setUpdatedAt(application.getUpdatedAt());
+                        return dto;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", applications.getContent());
+            response.put("data", applicationDtos);
             response.put("totalElements", applications.getTotalElements());
             response.put("totalPages", applications.getTotalPages());
             response.put("currentPage", applications.getNumber());
