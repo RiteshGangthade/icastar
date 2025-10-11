@@ -105,10 +105,10 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
     @Query("SELECT ja FROM JobApplication ja WHERE ja.job.id = :jobId AND ja.rating IS NOT NULL ORDER BY ja.rating DESC")
     List<JobApplication> findTopApplicantsByRating(@Param("jobId") Long jobId, Pageable pageable);
 
-    // Find applications by job post ID
-    @Query("SELECT ja FROM JobApplication ja WHERE ja.jobPost.id = :jobPostId")
-    List<JobApplication> findByJobPostId(@Param("jobPostId") Long jobPostId);
+    // Find applications by job ID
+    @Query("SELECT ja FROM JobApplication ja WHERE ja.job.id = :jobId")
+    List<JobApplication> findByJobId(@Param("jobId") Long jobId);
 
-    @Query("SELECT ja FROM JobApplication ja WHERE ja.jobPost.id = :jobPostId")
-    Page<JobApplication> findByJobPostId(@Param("jobPostId") Long jobPostId, Pageable pageable);
+    @Query("SELECT ja FROM JobApplication ja WHERE ja.job.id = :jobId")
+    Page<JobApplication> findByJobId(@Param("jobId") Long jobId, Pageable pageable);
 }

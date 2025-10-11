@@ -3,13 +3,15 @@ package com.icastar.platform.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "job_applications")
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"job", "artist"})
+@ToString(exclude = {"job", "artist"})
 public class JobApplication extends BaseEntity {
 
     @Id
@@ -19,10 +21,6 @@ public class JobApplication extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id", nullable = false)
     private Job job;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_post_id", nullable = false)
-    private JobPost jobPost;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id", nullable = false)

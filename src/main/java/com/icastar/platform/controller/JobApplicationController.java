@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/applications")
+@RequestMapping("/applications")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Job Application Management", description = "APIs for job applications")
@@ -81,13 +81,17 @@ public class JobApplicationController {
         }
     }
 
-    @Operation(summary = "Get my applications", description = "Get all applications for the current user")
+    @Operation(summary = "Get my applications", description = "Get all applications for the current user with search and filtering")
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/my-applications")
     public ResponseEntity<Map<String, Object>> getMyApplications(
             @Parameter(description = "Page number") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "Status filter") @RequestParam(required = false) JobApplication.ApplicationStatus status) {
+            @Parameter(description = "Status filter") @RequestParam(required = false) JobApplication.ApplicationStatus status,
+            @Parameter(description = "Search by job title") @RequestParam(required = false) String jobTitle,
+            @Parameter(description = "Search by company name") @RequestParam(required = false) String companyName,
+            @Parameter(description = "Sort by field") @RequestParam(defaultValue = "appliedAt") String sortBy,
+            @Parameter(description = "Sort direction") @RequestParam(defaultValue = "desc") String sortDir) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
@@ -98,13 +102,35 @@ public class JobApplicationController {
             ArtistProfile artistProfile = artistService.findByUserId(user.getId())
                     .orElseThrow(() -> new RuntimeException("Artist profile not found"));
 
-            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "appliedAt"));
+            Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+            Pageable pageable = PageRequest.of(page, size, sort);
             Page<JobApplication> applications;
 
             if (status != null) {
                 applications = jobApplicationService.findByArtistAndStatus(artistProfile, status, pageable);
             } else {
                 applications = jobApplicationService.findByArtist(artistProfile, pageable);
+            }
+
+            // Apply search filters if provided
+            if (jobTitle != null || companyName != null) {
+                List<JobApplication> filteredApplications = applications.getContent().stream()
+                        .filter(application -> {
+                            boolean matchesJobTitle = jobTitle == null || 
+                                    application.getJob().getTitle().toLowerCase().contains(jobTitle.toLowerCase());
+                            boolean matchesCompanyName = companyName == null || 
+                                    (application.getJob().getRecruiter().getRecruiterProfile() != null && 
+                                     application.getJob().getRecruiter().getRecruiterProfile().getCompanyName().toLowerCase().contains(companyName.toLowerCase()));
+                            return matchesJobTitle && matchesCompanyName;
+                        })
+                        .collect(java.util.stream.Collectors.toList());
+                
+                // Create a new Page with filtered content
+                applications = new org.springframework.data.domain.PageImpl<>(
+                        filteredApplications, 
+                        pageable, 
+                        filteredApplications.size()
+                );
             }
 
             Map<String, Object> response = new HashMap<>();

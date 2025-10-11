@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -69,14 +70,15 @@ public class DocumentService {
             throw new IllegalArgumentException("Number of files must match number of types");
         }
         
-        return files.stream()
-                .filter(file -> !file.isEmpty())
-                .map(file -> {
-                    int index = files.indexOf(file);
-                    Document.DocumentType type = types.get(index);
-                    return uploadDocument(user, file, type);
-                })
-                .toList();
+        List<Document> documents = new ArrayList<>();
+        for (int i = 0; i < files.size(); i++) {
+            MultipartFile file = files.get(i);
+            if (!file.isEmpty()) {
+                Document.DocumentType type = types.get(i);
+                documents.add(uploadDocument(user, file, type));
+            }
+        }
+        return documents;
     }
 
     /**

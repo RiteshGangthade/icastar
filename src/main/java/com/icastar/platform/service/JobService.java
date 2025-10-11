@@ -2,6 +2,7 @@ package com.icastar.platform.service;
 
 import com.icastar.platform.dto.job.CreateJobDto;
 import com.icastar.platform.dto.job.JobDto;
+import com.icastar.platform.dto.job.JobFilterDto;
 import com.icastar.platform.entity.Job;
 import com.icastar.platform.entity.User;
 import com.icastar.platform.repository.JobRepository;
@@ -43,6 +44,43 @@ public class JobService {
     @Transactional(readOnly = true)
     public Page<Job> findActiveJobs(Pageable pageable) {
         return jobRepository.findActiveJobs(LocalDate.now(), pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Job> findJobsWithFilters(JobFilterDto filter, Pageable pageable) {
+        Page<Job> jobs = jobRepository.findJobsWithFilters(
+                filter.getSearchTerm(),
+                filter.getJobType(),
+                filter.getExperienceLevel(),
+                filter.getStatus(),
+                filter.getMinPay(),
+                filter.getMaxPay(),
+                filter.getLocation(),
+                filter.getIsRemote(),
+                filter.getIsUrgent(),
+                filter.getIsFeatured(),
+                pageable
+        );
+        
+        // Apply skills filter if provided
+        if (filter.getSkills() != null && !filter.getSkills().isEmpty()) {
+            List<Job> filteredJobs = jobs.getContent().stream()
+                    .filter(job -> {
+                        if (job.getSkillsRequired() == null) return false;
+                        return filter.getSkills().stream()
+                                .anyMatch(skill -> job.getSkillsRequired().toLowerCase().contains(skill.toLowerCase()));
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+            
+            // Create a new Page with filtered content
+            return new org.springframework.data.domain.PageImpl<>(
+                    filteredJobs, 
+                    pageable, 
+                    filteredJobs.size()
+            );
+        }
+        
+        return jobs;
     }
 
     @Transactional(readOnly = true)
@@ -268,10 +306,43 @@ public class JobService {
         createJobDto.setApplicationDeadline(createJobPostDto.getApplicationDeadline() != null ? 
             createJobPostDto.getApplicationDeadline().toLocalDate() : null);
         createJobDto.setSkillsRequired(createJobPostDto.getSkillsRequired());
+        createJobDto.setRequirements(createJobPostDto.getRequirements());
+        createJobDto.setIsRemote(createJobPostDto.getIsRemote());
+        
+        // Map jobType from JobPost.JobType to Job.JobType
+        if (createJobPostDto.getJobType() != null) {
+            createJobDto.setJobType(Job.JobType.valueOf(createJobPostDto.getJobType().name()));
+        }
+        
+        // Map experienceLevel from JobPost.ExperienceLevel to Job.ExperienceLevel
+        if (createJobPostDto.getExperienceLevel() != null) {
+            createJobDto.setExperienceLevel(mapExperienceLevel(createJobPostDto.getExperienceLevel()));
+        }
+        
         // Note: CreateJobPostDto doesn't have experienceYearsMin/Max, using null
         createJobDto.setIsFeatured(false); // Default value
         
         return createJob(recruiterId, createJobDto);
+    }
+    
+    /**
+     * Maps JobPost.ExperienceLevel to Job.ExperienceLevel
+     */
+    private Job.ExperienceLevel mapExperienceLevel(com.icastar.platform.entity.JobPost.ExperienceLevel jobPostLevel) {
+        switch (jobPostLevel) {
+            case ENTRY:
+                return Job.ExperienceLevel.ENTRY_LEVEL;
+            case JUNIOR:
+                return Job.ExperienceLevel.ENTRY_LEVEL; // Map JUNIOR to ENTRY_LEVEL
+            case MID:
+                return Job.ExperienceLevel.MID_LEVEL;
+            case SENIOR:
+                return Job.ExperienceLevel.SENIOR_LEVEL;
+            case EXPERT:
+                return Job.ExperienceLevel.EXPERT_LEVEL;
+            default:
+                return Job.ExperienceLevel.ENTRY_LEVEL;
+        }
     }
 
     public Job updateJobPost(Long jobId, Long recruiterId, com.icastar.platform.dto.job.UpdateJobPostDto updateJobPostDto) {

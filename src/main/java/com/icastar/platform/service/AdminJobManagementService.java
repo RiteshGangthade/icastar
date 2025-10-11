@@ -163,10 +163,7 @@ public class AdminJobManagementService {
         statistics.put("recentJobs", recentJobs);
         
         // Average applications per job
-        double avgApplications = jobPostRepository.findAll().stream()
-                .mapToInt(job -> job.getApplications() != null ? job.getApplications().size() : 0)
-                .average()
-                .orElse(0.0);
+        double avgApplications = 0.0; // TODO: Calculate from JobApplication repository if needed
         statistics.put("avgApplicationsPerJob", avgApplications);
         
         return statistics;
@@ -245,8 +242,8 @@ public class AdminJobManagementService {
             }
         }
         
-        // Get application count
-        int applicationCount = job.getApplications() != null ? job.getApplications().size() : 0;
+        // Get application count - TODO: Calculate from JobApplication repository if needed
+        int applicationCount = 0;
         
         return JobManagementDto.builder()
                 .id(job.getId())

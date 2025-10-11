@@ -249,9 +249,9 @@ CREATE TABLE artist_profile_fields (
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT unique_profile_field UNIQUE (artist_profile_id, artist_type_field_id),
     FOREIGN KEY (artist_profile_id) REFERENCES artist_profiles(id) ON DELETE CASCADE,
-    FOREIGN KEY (artist_type_field_id) REFERENCES artist_type_fields(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_profile_field (artist_profile_id, artist_type_field_id)
+    FOREIGN KEY (artist_type_field_id) REFERENCES artist_type_fields(id) ON DELETE CASCADE
 );
 
 -- Recruiter Profile Fields table
@@ -334,9 +334,9 @@ CREATE TABLE job_applications (
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT unique_application UNIQUE (job_post_id, artist_id),
     FOREIGN KEY (job_post_id) REFERENCES job_posts(id) ON DELETE CASCADE,
-    FOREIGN KEY (artist_id) REFERENCES artist_profiles(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_application (job_post_id, artist_id)
+    FOREIGN KEY (artist_id) REFERENCES artist_profiles(id) ON DELETE CASCADE
 );
 
 -- Bookmarked Jobs table
@@ -349,9 +349,9 @@ CREATE TABLE bookmarked_jobs (
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT unique_bookmark UNIQUE (job_post_id, artist_id),
     FOREIGN KEY (job_post_id) REFERENCES job_posts(id) ON DELETE CASCADE,
-    FOREIGN KEY (artist_id) REFERENCES artist_profiles(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_bookmark (job_post_id, artist_id)
+    FOREIGN KEY (artist_id) REFERENCES artist_profiles(id) ON DELETE CASCADE
 );
 
 -- Auditions table
@@ -584,7 +584,9 @@ CREATE TABLE subscription_changes (
 
 -- Add foreign keys for users table
 ALTER TABLE users 
-ADD CONSTRAINT fk_users_deactivated_by FOREIGN KEY (deactivated_by) REFERENCES users(id) ON DELETE SET NULL,
+ADD CONSTRAINT fk_users_deactivated_by FOREIGN KEY (deactivated_by) REFERENCES users(id) ON DELETE SET NULL;
+
+ALTER TABLE users 
 ADD CONSTRAINT fk_users_reactivated_by FOREIGN KEY (reactivated_by) REFERENCES users(id) ON DELETE SET NULL;
 
 -- Indexes

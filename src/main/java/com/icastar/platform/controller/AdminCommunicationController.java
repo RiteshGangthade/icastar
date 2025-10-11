@@ -98,8 +98,15 @@ public class AdminCommunicationController {
             List<CommunicationLog> allLogs = communicationLogService.getLogsByType(type);
             
             // Convert to page manually since repository doesn't return Page
-            int start = (int) pageable.getOffset();
+            int start = Math.max(0, (int) pageable.getOffset());
             int end = Math.min((start + pageable.getPageSize()), allLogs.size());
+            
+            // Additional safety check to prevent IndexOutOfBoundsException
+            if (start >= allLogs.size()) {
+                start = 0;
+                end = Math.min(pageable.getPageSize(), allLogs.size());
+            }
+            
             List<CommunicationLog> pageContent = allLogs.subList(start, end);
             Page<CommunicationLog> page = new org.springframework.data.domain.PageImpl<>(
                 pageContent, pageable, allLogs.size());
@@ -134,8 +141,15 @@ public class AdminCommunicationController {
             List<CommunicationLog> logs = communicationLogService.getLogsByStatus(status);
             
             // Convert to page manually
-            int start = (int) pageable.getOffset();
+            int start = Math.max(0, (int) pageable.getOffset());
             int end = Math.min((start + pageable.getPageSize()), logs.size());
+            
+            // Additional safety check to prevent IndexOutOfBoundsException
+            if (start >= logs.size()) {
+                start = 0;
+                end = Math.min(pageable.getPageSize(), logs.size());
+            }
+            
             List<CommunicationLog> pageContent = logs.subList(start, end);
             Page<CommunicationLog> page = new org.springframework.data.domain.PageImpl<>(
                 pageContent, pageable, logs.size());
@@ -170,8 +184,15 @@ public class AdminCommunicationController {
             List<CommunicationLog> logs = communicationLogService.getLogsByEmail(email);
             
             // Convert to page manually
-            int start = (int) pageable.getOffset();
+            int start = Math.max(0, (int) pageable.getOffset());
             int end = Math.min((start + pageable.getPageSize()), logs.size());
+            
+            // Additional safety check to prevent IndexOutOfBoundsException
+            if (start >= logs.size()) {
+                start = 0;
+                end = Math.min(pageable.getPageSize(), logs.size());
+            }
+            
             List<CommunicationLog> pageContent = logs.subList(start, end);
             Page<CommunicationLog> page = new org.springframework.data.domain.PageImpl<>(
                 pageContent, pageable, logs.size());
@@ -206,8 +227,15 @@ public class AdminCommunicationController {
             List<CommunicationLog> logs = communicationLogService.getLogsByMobile(mobile);
             
             // Convert to page manually
-            int start = (int) pageable.getOffset();
+            int start = Math.max(0, (int) pageable.getOffset());
             int end = Math.min((start + pageable.getPageSize()), logs.size());
+            
+            // Additional safety check to prevent IndexOutOfBoundsException
+            if (start >= logs.size()) {
+                start = 0;
+                end = Math.min(pageable.getPageSize(), logs.size());
+            }
+            
             List<CommunicationLog> pageContent = logs.subList(start, end);
             Page<CommunicationLog> page = new org.springframework.data.domain.PageImpl<>(
                 pageContent, pageable, logs.size());

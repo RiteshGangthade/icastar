@@ -3,6 +3,7 @@ package com.icastar.platform.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,7 +13,8 @@ import java.util.List;
 @Entity
 @Table(name = "jobs")
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"applications", "bookmarkedJobs"})
+@ToString(exclude = {"applications", "bookmarkedJobs"})
 public class Job extends BaseEntity {
 
     @Id

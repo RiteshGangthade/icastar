@@ -22,11 +22,13 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity
 @Table(name = "artist_profiles")
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"jobApplications", "bookmarkedJobs", "dynamicFields"})
+@ToString(exclude = {"jobApplications", "bookmarkedJobs", "dynamicFields"})
 public class ArtistProfile extends BaseEntity {
 
     @Id

@@ -79,13 +79,19 @@ public class BookmarkedJobController {
         }
     }
 
-    @Operation(summary = "Get my bookmarks", description = "Get all bookmarked jobs for the current user")
+    @Operation(summary = "Get my bookmarks", description = "Get all bookmarked jobs for the current user with search and filtering")
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping
     public ResponseEntity<Map<String, Object>> getMyBookmarks(
             @Parameter(description = "Page number") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "Show only active jobs") @RequestParam(defaultValue = "true") boolean activeOnly) {
+            @Parameter(description = "Show only active jobs") @RequestParam(defaultValue = "true") boolean activeOnly,
+            @Parameter(description = "Search by job title") @RequestParam(required = false) String jobTitle,
+            @Parameter(description = "Search by company name") @RequestParam(required = false) String companyName,
+            @Parameter(description = "Job type filter") @RequestParam(required = false) com.icastar.platform.entity.Job.JobType jobType,
+            @Parameter(description = "Location filter") @RequestParam(required = false) String location,
+            @Parameter(description = "Sort by field") @RequestParam(defaultValue = "bookmarkedAt") String sortBy,
+            @Parameter(description = "Sort direction") @RequestParam(defaultValue = "desc") String sortDir) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
@@ -96,13 +102,39 @@ public class BookmarkedJobController {
             ArtistProfile artistProfile = artistService.findByUserId(user.getId())
                     .orElseThrow(() -> new RuntimeException("Artist profile not found"));
 
-            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "bookmarkedAt"));
+            Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+            Pageable pageable = PageRequest.of(page, size, sort);
             Page<BookmarkedJob> bookmarks;
 
             if (activeOnly) {
                 bookmarks = bookmarkedJobService.findActiveBookmarksByArtist(artistProfile, pageable);
             } else {
                 bookmarks = bookmarkedJobService.findByArtist(artistProfile, pageable);
+            }
+
+            // Apply search and filter if provided
+            if (jobTitle != null || companyName != null || jobType != null || location != null) {
+                List<BookmarkedJob> filteredBookmarks = bookmarks.getContent().stream()
+                        .filter(bookmark -> {
+                            boolean matchesJobTitle = jobTitle == null || 
+                                    bookmark.getJob().getTitle().toLowerCase().contains(jobTitle.toLowerCase());
+                            boolean matchesCompanyName = companyName == null || 
+                                    (bookmark.getJob().getRecruiter().getRecruiterProfile() != null && 
+                                     bookmark.getJob().getRecruiter().getRecruiterProfile().getCompanyName().toLowerCase().contains(companyName.toLowerCase()));
+                            boolean matchesJobType = jobType == null || 
+                                    bookmark.getJob().getJobType() == jobType;
+                            boolean matchesLocation = location == null || 
+                                    bookmark.getJob().getLocation().toLowerCase().contains(location.toLowerCase());
+                            return matchesJobTitle && matchesCompanyName && matchesJobType && matchesLocation;
+                        })
+                        .collect(java.util.stream.Collectors.toList());
+                
+                // Create a new Page with filtered content
+                bookmarks = new org.springframework.data.domain.PageImpl<>(
+                        filteredBookmarks, 
+                        pageable, 
+                        filteredBookmarks.size()
+                );
             }
 
             Map<String, Object> response = new HashMap<>();

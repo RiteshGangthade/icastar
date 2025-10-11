@@ -1,9 +1,5 @@
 package com.icastar.platform.controller;
-
-import com.icastar.platform.dto.job.CreateJobDto;
-import com.icastar.platform.dto.job.JobDto;
 import com.icastar.platform.entity.Job;
-import com.icastar.platform.entity.User;
 import com.icastar.platform.service.JobService;
 import com.icastar.platform.service.UserService;
 import com.icastar.platform.service.BookmarkedJobService;
@@ -35,7 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/jobs")
+@RequestMapping("/jobs")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Job Management", description = "APIs for job browsing, searching, and management")
@@ -46,7 +42,7 @@ public class JobController {
     private final BookmarkedJobService bookmarkedJobService;
     private final JobApplicationService jobApplicationService;
 
-    @Operation(summary = "Get all active jobs", description = "Retrieve a paginated list of all active jobs")
+    @Operation(summary = "Get all jobs with filters", description = "Retrieve a paginated list of jobs with comprehensive filtering options")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Jobs retrieved successfully",
                     content = @Content(mediaType = "application/json",
@@ -55,6 +51,17 @@ public class JobController {
     })
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllJobs(
+            @Parameter(description = "Search term for job title, description, or company") @RequestParam(required = false) String searchTerm,
+            @Parameter(description = "Job type filter") @RequestParam(required = false) Job.JobType jobType,
+            @Parameter(description = "Experience level filter") @RequestParam(required = false) Job.ExperienceLevel experienceLevel,
+            @Parameter(description = "Job status filter") @RequestParam(required = false) Job.JobStatus status,
+            @Parameter(description = "Minimum pay range") @RequestParam(required = false) java.math.BigDecimal minPay,
+            @Parameter(description = "Maximum pay range") @RequestParam(required = false) java.math.BigDecimal maxPay,
+            @Parameter(description = "Location filter") @RequestParam(required = false) String location,
+            @Parameter(description = "Remote jobs only") @RequestParam(required = false) Boolean isRemote,
+            @Parameter(description = "Urgent jobs only") @RequestParam(required = false) Boolean isUrgent,
+            @Parameter(description = "Featured jobs only") @RequestParam(required = false) Boolean isFeatured,
+            @Parameter(description = "Required skills (comma-separated)") @RequestParam(required = false) String skills,
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "Sort by field") @RequestParam(defaultValue = "publishedAt") String sortBy,
@@ -63,11 +70,33 @@ public class JobController {
         try {
             Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
             Pageable pageable = PageRequest.of(page, size, sort);
-            Page<Job> jobs = jobService.findActiveJobs(pageable);
+            
+            // Create filter DTO
+            com.icastar.platform.dto.job.JobFilterDto filter = new com.icastar.platform.dto.job.JobFilterDto();
+            filter.setSearchTerm(searchTerm);
+            filter.setJobType(jobType);
+            filter.setExperienceLevel(experienceLevel);
+            filter.setStatus(status);
+            filter.setMinPay(minPay);
+            filter.setMaxPay(maxPay);
+            filter.setLocation(location);
+            filter.setIsRemote(isRemote);
+            filter.setIsUrgent(isUrgent);
+            filter.setIsFeatured(isFeatured);
+            if (skills != null && !skills.isEmpty()) {
+                filter.setSkills(java.util.Arrays.asList(skills.split(",")));
+            }
+            
+            Page<Job> jobs = jobService.findJobsWithFilters(filter, pageable);
+
+            // Convert Job entities to JobDto to avoid Hibernate lazy loading issues
+            List<com.icastar.platform.dto.job.JobDto> jobDtos = jobs.getContent().stream()
+                    .map(com.icastar.platform.dto.job.JobDto::new)
+                    .collect(java.util.stream.Collectors.toList());
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", jobs.getContent());
+            response.put("data", jobDtos);
             response.put("totalElements", jobs.getTotalElements());
             response.put("totalPages", jobs.getTotalPages());
             response.put("currentPage", jobs.getNumber());
@@ -93,9 +122,12 @@ public class JobController {
                 // Increment view count
                 jobService.incrementViews(id);
 
+                // Convert Job entity to JobDto to avoid Hibernate lazy loading issues
+                com.icastar.platform.dto.job.JobDto jobDto = new com.icastar.platform.dto.job.JobDto(job.get());
+
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", true);
-                response.put("data", job.get());
+                response.put("data", jobDto);
                 return ResponseEntity.ok(response);
             } else {
                 Map<String, Object> response = new HashMap<>();
@@ -168,9 +200,14 @@ public class JobController {
         try {
             List<Job> jobs = jobService.findJobsByType(jobType);
 
+            // Convert Job entities to JobDto to avoid Hibernate lazy loading issues
+            List<com.icastar.platform.dto.job.JobDto> jobDtos = jobs.stream()
+                    .map(com.icastar.platform.dto.job.JobDto::new)
+                    .collect(java.util.stream.Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", jobs);
+            response.put("data", jobDtos);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -189,9 +226,14 @@ public class JobController {
         try {
             List<Job> jobs = jobService.findRemoteJobs();
 
+            // Convert Job entities to JobDto to avoid Hibernate lazy loading issues
+            List<com.icastar.platform.dto.job.JobDto> jobDtos = jobs.stream()
+                    .map(com.icastar.platform.dto.job.JobDto::new)
+                    .collect(java.util.stream.Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", jobs);
+            response.put("data", jobDtos);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -210,9 +252,14 @@ public class JobController {
         try {
             List<Job> jobs = jobService.findFeaturedJobs();
 
+            // Convert Job entities to JobDto to avoid Hibernate lazy loading issues
+            List<com.icastar.platform.dto.job.JobDto> jobDtos = jobs.stream()
+                    .map(com.icastar.platform.dto.job.JobDto::new)
+                    .collect(java.util.stream.Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", jobs);
+            response.put("data", jobDtos);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -231,9 +278,14 @@ public class JobController {
         try {
             List<Job> jobs = jobService.findUrgentJobs();
 
+            // Convert Job entities to JobDto to avoid Hibernate lazy loading issues
+            List<com.icastar.platform.dto.job.JobDto> jobDtos = jobs.stream()
+                    .map(com.icastar.platform.dto.job.JobDto::new)
+                    .collect(java.util.stream.Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", jobs);
+            response.put("data", jobDtos);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -252,9 +304,14 @@ public class JobController {
         try {
             List<Job> jobs = jobService.findJobsBySkill(skill);
 
+            // Convert Job entities to JobDto to avoid Hibernate lazy loading issues
+            List<com.icastar.platform.dto.job.JobDto> jobDtos = jobs.stream()
+                    .map(com.icastar.platform.dto.job.JobDto::new)
+                    .collect(java.util.stream.Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", jobs);
+            response.put("data", jobDtos);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -276,9 +333,14 @@ public class JobController {
             Pageable pageable = PageRequest.of(page, size);
             List<Job> jobs = jobService.findMostPopularJobs(pageable);
 
+            // Convert Job entities to JobDto to avoid Hibernate lazy loading issues
+            List<com.icastar.platform.dto.job.JobDto> jobDtos = jobs.stream()
+                    .map(com.icastar.platform.dto.job.JobDto::new)
+                    .collect(java.util.stream.Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", jobs);
+            response.put("data", jobDtos);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -300,9 +362,14 @@ public class JobController {
             Pageable pageable = PageRequest.of(page, size);
             List<Job> jobs = jobService.findRecentlyPostedJobs(pageable);
 
+            // Convert Job entities to JobDto to avoid Hibernate lazy loading issues
+            List<com.icastar.platform.dto.job.JobDto> jobDtos = jobs.stream()
+                    .map(com.icastar.platform.dto.job.JobDto::new)
+                    .collect(java.util.stream.Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", jobs);
+            response.put("data", jobDtos);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -322,9 +389,14 @@ public class JobController {
         try {
             List<Job> jobs = jobService.findJobsExpiringSoon(days);
 
+            // Convert Job entities to JobDto to avoid Hibernate lazy loading issues
+            List<com.icastar.platform.dto.job.JobDto> jobDtos = jobs.stream()
+                    .map(com.icastar.platform.dto.job.JobDto::new)
+                    .collect(java.util.stream.Collectors.toList());
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", jobs);
+            response.put("data", jobDtos);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

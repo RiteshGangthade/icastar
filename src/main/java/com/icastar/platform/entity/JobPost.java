@@ -91,8 +91,9 @@ public class JobPost extends BaseEntity {
     @Column(name = "is_visible", nullable = false)
     private Boolean isVisible = true;
 
-    @OneToMany(mappedBy = "jobPost", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<JobApplication> applications;
+    // Note: JobApplication now maps to Job entity, not JobPost
+    // @OneToMany(mappedBy = "jobPost", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // private List<JobApplication> applications;
 
     // Note: BookmarkedJob is mapped to Job entity, not JobPost
     // @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

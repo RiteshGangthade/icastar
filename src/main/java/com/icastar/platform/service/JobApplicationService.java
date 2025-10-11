@@ -11,6 +11,7 @@ import com.icastar.platform.repository.JobRepository;
 import com.icastar.platform.repository.ArtistProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,16 @@ public class JobApplicationService {
     }
 
     @Transactional(readOnly = true)
+    public List<JobApplication> findByJobId(Long jobId) {
+        return jobApplicationRepository.findByJobId(jobId);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<JobApplication> findByJobId(Long jobId, Pageable pageable) {
+        return jobApplicationRepository.findByJobId(jobId, pageable);
+    }
+
+    @Transactional(readOnly = true)
     public List<JobApplication> findByRecruiterId(Long recruiterId) {
         return jobApplicationRepository.findByRecruiterId(recruiterId);
     }
@@ -100,7 +111,7 @@ public class JobApplicationService {
         return jobApplicationRepository.findByIsHiredTrue();
     }
 
-    public JobApplication createApplication(Long artistId, CreateJobApplicationDto createDto) {
+    public JobApplication createApplication(Long artistId, CreateJobApplicationDto createDto) throws BadRequestException {
         ArtistProfile artist = artistProfileRepository.findById(artistId)
                 .orElseThrow(() -> new RuntimeException("Artist profile not found"));
 
@@ -110,7 +121,7 @@ public class JobApplicationService {
         // Check if already applied
         Optional<JobApplication> existingApplication = jobApplicationRepository.findByArtistAndJob(artist, job);
         if (existingApplication.isPresent()) {
-            throw new RuntimeException("You have already applied for this job");
+            throw new BadRequestException("You have already applied for this job");
         }
 
         JobApplication application = new JobApplication();

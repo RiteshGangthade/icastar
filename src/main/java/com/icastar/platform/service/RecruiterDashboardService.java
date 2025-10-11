@@ -181,8 +181,8 @@ public class RecruiterDashboardService {
             throw new RuntimeException("Access denied to this job");
         }
         
-        // Get applications count
-        int applicationCount = jobPost.getApplications() != null ? jobPost.getApplications().size() : 0;
+        // Get applications count - TODO: Calculate from JobApplication repository if needed
+        int applicationCount = 0;
         
         // Build job details
         Map<String, Object> jobDetails = new HashMap<>();
@@ -229,7 +229,7 @@ public class RecruiterDashboardService {
         }
         
         // Get applications
-        Page<JobApplication> applications = jobApplicationRepository.findByJobPostId(jobId, pageable);
+        Page<JobApplication> applications = jobApplicationRepository.findByJobId(jobId, pageable);
         
         return applications.map(this::convertToRecentApplicationDto);
     }
@@ -480,12 +480,10 @@ public class RecruiterDashboardService {
         statistics.put("totalJobsPosted", (long) jobPosts.size());
         statistics.put("activeJobs", jobPosts.stream().filter(job -> job.getIsActive()).count());
         statistics.put("closedJobs", jobPosts.stream().filter(job -> !job.getIsActive()).count());
-        statistics.put("totalApplications", jobPosts.stream().mapToInt(job -> 
-                job.getApplications() != null ? job.getApplications().size() : 0).sum());
+        statistics.put("totalApplications", 0); // TODO: Calculate from JobApplication repository if needed
         statistics.put("totalHires", 0L); // This would need to be tracked separately
         statistics.put("totalViews", 0L); // This would need to be tracked separately
-        statistics.put("averageApplicationsPerJob", jobPosts.stream().mapToDouble(job -> 
-                job.getApplications() != null ? job.getApplications().size() : 0).average().orElse(0.0));
+        statistics.put("averageApplicationsPerJob", 0.0); // TODO: Calculate from JobApplication repository if needed
         statistics.put("hireRate", 0.0); // This would need to be calculated
         
         return statistics;
@@ -534,7 +532,7 @@ public class RecruiterDashboardService {
                 .applicationDeadline(jobPost.getApplicationDeadline())
                 .startDate(jobPost.getStartDate())
                 .createdAt(jobPost.getCreatedAt())
-                .applicationCount(jobPost.getApplications() != null ? jobPost.getApplications().size() : 0)
+                .applicationCount(0) // TODO: Calculate from JobApplication repository if needed
                 .viewCount(0) // This would need to be tracked separately
                 .boostCount(0) // This would need to be tracked separately
                 .canEdit(true)
@@ -547,8 +545,8 @@ public class RecruiterDashboardService {
     private RecentApplicationDto convertToRecentApplicationDto(JobApplication application) {
         return RecentApplicationDto.builder()
                 .id(application.getId())
-                .jobId(application.getJobPost().getId())
-                .jobTitle(application.getJobPost().getTitle())
+                .jobId(application.getJob().getId())
+                .jobTitle(application.getJob().getTitle())
                 .artistId(application.getArtist().getId())
                 .artistName(application.getArtist().getUser().getEmail()) // Placeholder
                 .artistEmail(application.getArtist().getUser().getEmail())

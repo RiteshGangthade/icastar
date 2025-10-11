@@ -101,7 +101,7 @@ public class RecruiterApplicationController {
                     Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
             
             Pageable pageable = PageRequest.of(page, size, sort);
-            Page<JobApplication> applications = jobApplicationService.findByJobPost(jobId, pageable);
+            Page<JobApplication> applications = jobApplicationService.findByJobId(jobId, pageable);
 
             // Filter by status if provided
             if (status != null) {
@@ -137,8 +137,8 @@ public class RecruiterApplicationController {
             JobApplication application = jobApplicationService.findById(applicationId)
                     .orElseThrow(() -> new RuntimeException("Application not found with id: " + applicationId));
 
-            // Verify that the recruiter owns the job post
-            if (!application.getJobPost().getRecruiter().getId().equals(recruiter.getId())) {
+            // Verify that the recruiter owns the job
+            if (!application.getJob().getRecruiter().getId().equals(recruiter.getId())) {
                 throw new RuntimeException("You don't have permission to view this application");
             }
 

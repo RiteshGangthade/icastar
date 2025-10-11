@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 public class JobApplicationDto {
     private Long id;
-    private Long jobPostId;
+    private Long jobId;
     private String jobTitle;
     private Long artistId;
     private String artistName;
@@ -39,8 +39,8 @@ public class JobApplicationDto {
 
     public JobApplicationDto(JobApplication application) {
         this.id = application.getId();
-        this.jobPostId = application.getJobPost().getId();
-        this.jobTitle = application.getJobPost().getTitle();
+        this.jobId = application.getJob().getId();
+        this.jobTitle = application.getJob().getTitle();
         this.artistId = application.getArtist().getId();
         this.coverLetter = application.getCoverLetter();
         this.proposedRate = application.getExpectedSalary() != null ? 
@@ -60,17 +60,18 @@ public class JobApplicationDto {
                 application.getArtist().getUser().getIsVerified() : false;
         }
         
-        if (application.getJobPost() != null) {
-            this.jobDescription = application.getJobPost().getDescription();
-            this.jobLocation = application.getJobPost().getLocation();
-            this.isJobRemote = application.getJobPost().getIsRemote();
-            this.jobBudgetMin = application.getJobPost().getBudgetMin();
-            this.jobBudgetMax = application.getJobPost().getBudgetMax();
+        if (application.getJob() != null) {
+            this.jobDescription = application.getJob().getDescription();
+            this.jobLocation = application.getJob().getLocation();
+            this.isJobRemote = application.getJob().getIsRemote();
+            this.jobBudgetMin = application.getJob().getBudgetMin();
+            this.jobBudgetMax = application.getJob().getBudgetMax();
             
-            if (application.getJobPost().getRecruiter() != null) {
-                this.recruiterId = application.getJobPost().getRecruiter().getId();
-                this.recruiterName = application.getJobPost().getRecruiter().getContactPersonName();
-                this.companyName = application.getJobPost().getRecruiter().getCompanyName();
+            if (application.getJob().getRecruiter() != null) {
+                this.recruiterId = application.getJob().getRecruiter().getId();
+                this.recruiterName = application.getJob().getRecruiter().getFirstName() + " " + 
+                                   application.getJob().getRecruiter().getLastName();
+                this.companyName = application.getJob().getRecruiter().getEmail(); // Using email as company name fallback
             }
         }
     }
