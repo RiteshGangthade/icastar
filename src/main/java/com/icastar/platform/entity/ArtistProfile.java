@@ -44,10 +44,10 @@ public class ArtistProfile extends BaseEntity {
     @JoinColumn(name = "artist_type_id", nullable = false)
     private ArtistType artistType;
 
-    @Column(name = "first_name")
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
-    @Column(name = "last_name")
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
     @Column(name = "stage_name")

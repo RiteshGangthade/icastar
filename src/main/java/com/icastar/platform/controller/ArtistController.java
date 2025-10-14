@@ -2,6 +2,7 @@ package com.icastar.platform.controller;
 
 import com.icastar.platform.dto.ArtistProfileFieldDto;
 import com.icastar.platform.dto.artist.CreateArtistProfileDto;
+import com.icastar.platform.dto.artist.SimpleCreateArtistProfileDto;
 import com.icastar.platform.entity.ArtistProfile;
 import com.icastar.platform.entity.User;
 import com.icastar.platform.service.ArtistService;
@@ -45,7 +46,12 @@ public class ArtistController {
     private final ObjectMapper objectMapper;
 
     @PostMapping("/profile")
-    public ResponseEntity<Map<String, Object>> createArtistProfile(@Valid @RequestBody CreateArtistProfileDto createDto) {
+    @Operation(summary = "Create Artist Profile", description = "Create a new artist profile with simplified fields")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Artist profile created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid input or artist profile already exists")
+    })
+    public ResponseEntity<Map<String, Object>> createArtistProfile(@Valid @RequestBody SimpleCreateArtistProfileDto createDto) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
@@ -61,25 +67,21 @@ public class ArtistController {
                 return ResponseEntity.badRequest().body(response);
             }
 
-            // Update user fields
-            user.setFirstName(createDto.getFirstName());
-            user.setLastName(createDto.getLastName());
-            userService.save(user);
-
+            // Create artist profile with simplified data
+            // Use user's name if available, otherwise use default values
+            String firstName = (user.getFirstName() != null && !user.getFirstName().trim().isEmpty()) 
+                ? user.getFirstName().trim() : "User";
+            String lastName = (user.getLastName() != null && !user.getLastName().trim().isEmpty()) 
+                ? user.getLastName().trim() : "Artist";
+            
             ArtistProfile artistProfile = artistService.createArtistProfile(
                     user.getId(), 
                     createDto.getArtistTypeId(),
-                    createDto.getFirstName(),
-                    createDto.getLastName()
+                    firstName,
+                    lastName
             );
 
-            // Update additional fields
-            if (createDto.getStageName() != null) {
-                artistProfile.setStageName(createDto.getStageName());
-            }
-            if (createDto.getBio() != null) {
-                artistProfile.setBio(createDto.getBio());
-            }
+            // Set the additional fields from the simplified DTO
             if (createDto.getDateOfBirth() != null) {
                 artistProfile.setDateOfBirth(createDto.getDateOfBirth());
             }
@@ -89,66 +91,11 @@ public class ArtistController {
             if (createDto.getLocation() != null) {
                 artistProfile.setLocation(createDto.getLocation());
             }
-            // Note: Profile images and portfolio URLs are now handled by Document entity
-            // They should be uploaded separately using the document upload API
-            if (createDto.getSkills() != null) {
-                try {
-                    artistProfile.setSkills(objectMapper.writeValueAsString(createDto.getSkills()));
-                } catch (JsonProcessingException e) {
-                    log.error("Error converting skills to JSON", e);
-                    throw new RuntimeException("Error processing skills data");
-                }
-            }
             if (createDto.getExperienceYears() != null) {
                 artistProfile.setExperienceYears(createDto.getExperienceYears());
             }
-            if (createDto.getHourlyRate() != null) {
-                artistProfile.setHourlyRate(createDto.getHourlyRate());
-            }
-            
-            // Handle other JSON fields
-            if (createDto.getLanguagesSpoken() != null) {
-                try {
-                    artistProfile.setLanguagesSpoken(objectMapper.writeValueAsString(createDto.getLanguagesSpoken()));
-                } catch (JsonProcessingException e) {
-                    log.error("Error converting languagesSpoken to JSON", e);
-                    throw new RuntimeException("Error processing languagesSpoken data");
-                }
-            }
-            
-            if (createDto.getComfortableAreas() != null) {
-                try {
-                    artistProfile.setComfortableAreas(objectMapper.writeValueAsString(createDto.getComfortableAreas()));
-                } catch (JsonProcessingException e) {
-                    log.error("Error converting comfortableAreas to JSON", e);
-                    throw new RuntimeException("Error processing comfortableAreas data");
-                }
-            }
-            
-            if (createDto.getProjectsWorked() != null) {
-                try {
-                    artistProfile.setProjectsWorked(objectMapper.writeValueAsString(createDto.getProjectsWorked()));
-                } catch (JsonProcessingException e) {
-                    log.error("Error converting projectsWorked to JSON", e);
-                    throw new RuntimeException("Error processing projectsWorked data");
-                }
-            }
-            
-            if (createDto.getTravelCities() != null) {
-                try {
-                    artistProfile.setTravelCities(objectMapper.writeValueAsString(createDto.getTravelCities()));
-                } catch (JsonProcessingException e) {
-                    log.error("Error converting travelCities to JSON", e);
-                    throw new RuntimeException("Error processing travelCities data");
-                }
-            }
 
             artistService.save(artistProfile);
-
-            // Handle dynamic fields if provided
-            if (createDto.getDynamicFields() != null && !createDto.getDynamicFields().isEmpty()) {
-                artistService.saveDynamicFields(artistProfile.getId(), createDto.getDynamicFields());
-            }
 
             // Get dynamic fields for the response
             List<ArtistProfileFieldDto> dynamicFields = artistService.getDynamicFields(artistProfile.getId());
