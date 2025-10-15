@@ -41,42 +41,7 @@ CREATE TABLE IF NOT EXISTS jobs (
     INDEX idx_application_deadline (application_deadline)
 );
 
--- Create job_applications table
-CREATE TABLE IF NOT EXISTS job_applications (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    job_id BIGINT NOT NULL,
-    artist_id BIGINT NOT NULL,
-    status ENUM('APPLIED', 'UNDER_REVIEW', 'SHORTLISTED', 'INTERVIEW_SCHEDULED', 'INTERVIEWED', 'SELECTED', 'REJECTED', 'WITHDRAWN', 'HIRED', 'ON_HOLD') DEFAULT 'APPLIED',
-    cover_letter TEXT,
-    expected_salary DOUBLE,
-    availability_date DATE,
-    portfolio_url VARCHAR(500),
-    resume_url VARCHAR(500),
-    demo_reel_url VARCHAR(500),
-    applied_at TIMESTAMP NOT NULL,
-    reviewed_at TIMESTAMP,
-    interview_scheduled_at TIMESTAMP,
-    interview_notes TEXT,
-    rejection_reason TEXT,
-    feedback TEXT,
-    rating INT CHECK (rating >= 1 AND rating <= 5),
-    is_shortlisted BOOLEAN DEFAULT FALSE,
-    is_hired BOOLEAN DEFAULT FALSE,
-    hired_at TIMESTAMP,
-    contract_url VARCHAR(500),
-    notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
-    FOREIGN KEY (artist_id) REFERENCES artist_profiles(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_job_artist (job_id, artist_id),
-    INDEX idx_job_id (job_id),
-    INDEX idx_artist_id (artist_id),
-    INDEX idx_status (status),
-    INDEX idx_applied_at (applied_at),
-    INDEX idx_interview_scheduled_at (interview_scheduled_at)
-);
+-- job_applications table already exists from V1, will be updated in V13
 
 -- Create bookmarked_jobs table
 CREATE TABLE IF NOT EXISTS bookmarked_jobs (

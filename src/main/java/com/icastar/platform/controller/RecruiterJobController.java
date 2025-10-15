@@ -1,8 +1,8 @@
 package com.icastar.platform.controller;
 
-import com.icastar.platform.dto.job.CreateJobPostDto;
+import com.icastar.platform.dto.job.CreateJobDto;
 import com.icastar.platform.dto.job.JobDto;
-import com.icastar.platform.dto.job.UpdateJobPostDto;
+import com.icastar.platform.dto.job.UpdateJobDto;
 import com.icastar.platform.entity.Job;
 import com.icastar.platform.entity.User;
 import com.icastar.platform.service.JobService;
@@ -33,7 +33,7 @@ public class RecruiterJobController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<JobDto> createJobPost(@Valid @RequestBody CreateJobPostDto createDto) {
+    public ResponseEntity<JobDto> createJobPost(@Valid @RequestBody CreateJobDto createDto) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String email = authentication.getName();
@@ -126,7 +126,7 @@ public class RecruiterJobController {
     @PutMapping("/{jobId}")
     public ResponseEntity<JobDto> updateJobPost(
             @PathVariable Long jobId,
-            @Valid @RequestBody UpdateJobPostDto updateDto) {
+            @Valid @RequestBody UpdateJobDto updateDto) {
         
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

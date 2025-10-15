@@ -1,2 +1,2 @@
--- Simple fix: Add default value to job_post_id column to prevent the error
-ALTER TABLE job_applications MODIFY COLUMN job_post_id BIGINT DEFAULT 1;
+-- This migration is no longer needed as we use job_id instead of job_post_id
+-- The job_applications table now references the jobs table directly

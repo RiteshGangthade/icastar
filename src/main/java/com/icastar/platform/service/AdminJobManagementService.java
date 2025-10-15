@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AdminJobManagementService {
     
-    private final JobPostRepository jobPostRepository;
+    private final JobRepository jobRepository;
     private final UserRepository userRepository;
     private final RecruiterProfileRepository recruiterProfileRepository;
     private final SubscriptionRepository subscriptionRepository;
@@ -52,7 +53,7 @@ public class AdminJobManagementService {
         
         // This would need to be implemented in JobPostRepository with custom query
         // For now, returning all jobs - implement filtering in repository
-        Page<JobPost> jobs = jobPostRepository.findAll(pageable);
+        Page<Job> jobs = jobRepository.findAll(pageable);
         
         return jobs.map(this::convertToJobManagementDto);
     }
@@ -64,7 +65,7 @@ public class AdminJobManagementService {
     public JobManagementDto getJobById(Long jobId, User admin) {
         checkJobManagementPermission(admin);
         
-        JobPost job = jobPostRepository.findById(jobId)
+        Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
         
         return convertToJobManagementDto(job);
@@ -78,14 +79,14 @@ public class AdminJobManagementService {
                                                String ipAddress, String userAgent) {
         checkJobManagementPermission(admin);
         
-        JobPost job = jobPostRepository.findById(request.getJobId())
+        Job job = jobRepository.findById(request.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job not found"));
         
         boolean previousVisibility = job.getIsActive();
         job.setIsActive(request.getIsVisible());
         job.setUpdatedAt(LocalDateTime.now());
         
-        JobPost savedJob = jobPostRepository.save(job);
+        Job savedJob = jobRepository.save(job);
         
         // Log the action
         logJobAction(job, admin, "TOGGLE_VISIBILITY", 
@@ -130,10 +131,14 @@ public class AdminJobManagementService {
         Map<String, Object> statistics = new HashMap<>();
         
         // Count jobs by status
-        long totalJobs = jobPostRepository.count();
-        long activeJobs = jobPostRepository.countByIsActiveTrue();
-        long inactiveJobs = jobPostRepository.countByIsActiveFalse();
-        long expiredJobs = jobPostRepository.countByApplicationDeadlineBefore(LocalDateTime.now());
+        long totalJobs = jobRepository.count();
+        long activeJobs = jobRepository.countByStatus(Job.JobStatus.ACTIVE);
+        long inactiveJobs = jobRepository.countByStatus(Job.JobStatus.CLOSED);
+        // Count expired jobs (jobs with deadline before today)
+        long expiredJobs = jobRepository.findAll().stream()
+                .filter(job -> job.getApplicationDeadline() != null && 
+                              job.getApplicationDeadline().isBefore(LocalDate.now()))
+                .count();
         
         statistics.put("totalJobs", totalJobs);
         statistics.put("activeJobs", activeJobs);
@@ -141,7 +146,7 @@ public class AdminJobManagementService {
         statistics.put("expiredJobs", expiredJobs);
         
         // Count by job type
-        Map<String, Long> jobsByType = jobPostRepository.findAll().stream()
+        Map<String, Long> jobsByType = jobRepository.findAll().stream()
                 .collect(Collectors.groupingBy(
                         job -> job.getJobType().name(),
                         Collectors.counting()
@@ -149,17 +154,24 @@ public class AdminJobManagementService {
         statistics.put("jobsByType", jobsByType);
         
         // Count by recruiter category
-        Map<String, Long> jobsByCategory = jobPostRepository.findAll().stream()
-                .filter(job -> job.getRecruiter() != null && job.getRecruiter().getRecruiterCategory() != null)
+        Map<String, Long> jobsByCategory = jobRepository.findAll().stream()
+                .filter(job -> job.getRecruiter() != null)
                 .collect(Collectors.groupingBy(
-                        job -> job.getRecruiter().getRecruiterCategory().getDisplayName(),
+                        job -> {
+                            RecruiterProfile profile = recruiterProfileRepository.findByUserId(job.getRecruiter().getId()).orElse(null);
+                            return profile != null && profile.getRecruiterCategory() != null ? 
+                                profile.getRecruiterCategory().getDisplayName() : "Unknown";
+                        },
                         Collectors.counting()
                 ));
         statistics.put("jobsByCategory", jobsByCategory);
         
         // Recent jobs
         LocalDateTime last24Hours = LocalDateTime.now().minusHours(24);
-        long recentJobs = jobPostRepository.countByCreatedAtAfter(last24Hours);
+        long recentJobs = jobRepository.findAll().stream()
+                .filter(job -> job.getCreatedAt() != null && 
+                              job.getCreatedAt().isAfter(last24Hours))
+                .count();
         statistics.put("recentJobs", recentJobs);
         
         // Average applications per job
@@ -227,9 +239,10 @@ public class AdminJobManagementService {
     /**
      * Convert JobPost to JobManagementDto
      */
-    private JobManagementDto convertToJobManagementDto(JobPost job) {
-        RecruiterProfile recruiter = job.getRecruiter();
-        User recruiterUser = recruiter != null ? recruiter.getUser() : null;
+    private JobManagementDto convertToJobManagementDto(Job job) {
+        User recruiterUser = job.getRecruiter();
+        RecruiterProfile recruiter = recruiterUser != null ? 
+            recruiterProfileRepository.findByUserId(recruiterUser.getId()).orElse(null) : null;
         
         // Get subscription information
         String subscriptionPlan = "Unknown";
@@ -252,14 +265,16 @@ public class AdminJobManagementService {
                 .requirements(job.getRequirements())
                 .jobType(job.getJobType().name())
                 .location(job.getLocation())
-                .salaryMin(job.getSalaryMin())
-                .salaryMax(job.getSalaryMax())
+                .salaryMin(job.getBudgetMin())
+                .salaryMax(job.getBudgetMax())
                 .currency(job.getCurrency())
                 .status(job.getStatus().name())
-                .isActive(job.getIsActive())
-                .isVisible(job.getIsActive())
-                .applicationDeadline(job.getApplicationDeadline())
-                .startDate(job.getStartDate())
+                .isActive(job.getStatus() == Job.JobStatus.ACTIVE)
+                .isVisible(job.getStatus() == Job.JobStatus.ACTIVE)
+                .applicationDeadline(job.getApplicationDeadline() != null ? 
+                    job.getApplicationDeadline().atStartOfDay() : null)
+                .startDate(job.getStartDate() != null ? 
+                    job.getStartDate().atStartOfDay() : null)
                 .createdAt(job.getCreatedAt())
                 .updatedAt(job.getUpdatedAt())
                 .recruiterId(recruiter != null ? recruiter.getId() : null)
@@ -279,7 +294,7 @@ public class AdminJobManagementService {
     /**
      * Log job action
      */
-    private void logJobAction(JobPost job, User admin, String action, String previousStatus, 
+    private void logJobAction(Job job, User admin, String action, String previousStatus, 
                              String newStatus, String reason, String adminNotes, 
                              String ipAddress, String userAgent) {
         

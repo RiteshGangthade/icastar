@@ -66,8 +66,10 @@ public class RecruiterProfile extends BaseEntity {
     @JoinColumn(name = "recruiter_category_id")
     private RecruiterCategory recruiterCategory;
 
-    @OneToMany(mappedBy = "recruiter", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<JobPost> jobPosts;
+    // Note: Jobs are accessed through the User entity, not directly from RecruiterProfile
+    // This relationship is handled through the User.recruiterProfile relationship
+    @Transient
+    private List<Job> jobs;
 
     @OneToMany(mappedBy = "recruiterProfile", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<RecruiterProfileField> dynamicFields;

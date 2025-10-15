@@ -21,7 +21,7 @@ public class RecruiterDashboardService {
     
     private final UserRepository userRepository;
     private final RecruiterProfileRepository recruiterProfileRepository;
-    private final JobPostRepository jobPostRepository;
+    private final JobRepository jobRepository;
     private final JobApplicationRepository jobApplicationRepository;
     private final ArtistProfileRepository artistProfileRepository;
     private final SubscriptionRepository subscriptionRepository;
@@ -102,26 +102,27 @@ public class RecruiterDashboardService {
         RecruiterProfile recruiterProfile = recruiterProfileRepository.findByUserId(recruiter.getId())
                 .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
         
-        // Create job post
-        JobPost jobPost = new JobPost();
-        jobPost.setTitle(jobPosting.getTitle());
-        jobPost.setDescription(jobPosting.getDescription());
-        jobPost.setRequirements(jobPosting.getRequirements());
-        jobPost.setJobType(JobPost.JobType.valueOf(jobPosting.getJobType()));
-        jobPost.setLocation(jobPosting.getLocation());
-        jobPost.setSalaryMin(jobPosting.getSalaryMin());
-        jobPost.setSalaryMax(jobPosting.getSalaryMax());
-        jobPost.setCurrency(jobPosting.getCurrency());
-        jobPost.setApplicationDeadline(jobPosting.getApplicationDeadline());
-        jobPost.setStartDate(jobPosting.getStartDate());
-        jobPost.setStatus(JobPost.JobStatus.OPEN);
-        jobPost.setIsActive(true);
-        jobPost.setRecruiter(recruiterProfile);
-        jobPost.setCreatedAt(LocalDateTime.now());
-        jobPost.setUpdatedAt(LocalDateTime.now());
+        // Create job
+        Job job = new Job();
+        job.setTitle(jobPosting.getTitle());
+        job.setDescription(jobPosting.getDescription());
+        job.setRequirements(jobPosting.getRequirements());
+        job.setJobType(Job.JobType.valueOf(jobPosting.getJobType()));
+        job.setLocation(jobPosting.getLocation());
+        job.setBudgetMin(jobPosting.getSalaryMin());
+        job.setBudgetMax(jobPosting.getSalaryMax());
+        job.setCurrency(jobPosting.getCurrency());
+        job.setApplicationDeadline(jobPosting.getApplicationDeadline() != null ? 
+            jobPosting.getApplicationDeadline().toLocalDate() : null);
+        job.setStartDate(jobPosting.getStartDate() != null ? 
+            jobPosting.getStartDate().toLocalDate() : null);
+        job.setStatus(Job.JobStatus.ACTIVE);
+        job.setRecruiter(recruiterProfile.getUser());
+        job.setCreatedAt(LocalDateTime.now());
+        job.setUpdatedAt(LocalDateTime.now());
         
-        // Save job post
-        JobPost savedJob = jobPostRepository.save(jobPost);
+        // Save job
+        Job savedJob = jobRepository.save(job);
         
         // Track usage
         trackJobPostUsage(recruiter);
@@ -148,12 +149,12 @@ public class RecruiterDashboardService {
                 .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
         
         // Build query based on filters
-        Page<JobPost> jobs = jobPostRepository.findByRecruiterId(recruiterProfile.getId(), pageable);
+        Page<Job> jobs = jobRepository.findByRecruiter(recruiterProfile.getUser(), pageable);
         
         // Apply additional filters if needed
         if (status != null) {
             // Filter jobs by status
-            List<JobPost> filteredJobs = jobs.getContent().stream()
+            List<Job> filteredJobs = jobs.getContent().stream()
                     .filter(job -> job.getStatus().name().equals(status))
                     .collect(Collectors.toList());
             // Create a new Page with filtered content
@@ -172,12 +173,12 @@ public class RecruiterDashboardService {
         RecruiterProfile recruiterProfile = recruiterProfileRepository.findByUserId(recruiter.getId())
                 .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
         
-        // Get job post
-        JobPost jobPost = jobPostRepository.findById(jobId)
+        // Get job
+        Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
         
         // Check if job belongs to recruiter
-        if (!jobPost.getRecruiter().getId().equals(recruiterProfile.getId())) {
+        if (!job.getRecruiter().getId().equals(recruiterProfile.getUser().getId())) {
             throw new RuntimeException("Access denied to this job");
         }
         
@@ -186,21 +187,21 @@ public class RecruiterDashboardService {
         
         // Build job details
         Map<String, Object> jobDetails = new HashMap<>();
-        jobDetails.put("id", jobPost.getId());
-        jobDetails.put("title", jobPost.getTitle());
-        jobDetails.put("description", jobPost.getDescription());
-        jobDetails.put("requirements", jobPost.getRequirements());
-        jobDetails.put("jobType", jobPost.getJobType());
-        jobDetails.put("location", jobPost.getLocation());
-        jobDetails.put("salaryMin", jobPost.getSalaryMin());
-        jobDetails.put("salaryMax", jobPost.getSalaryMax());
-        jobDetails.put("currency", jobPost.getCurrency());
-        jobDetails.put("status", jobPost.getStatus());
-        jobDetails.put("isActive", jobPost.getIsActive());
-        jobDetails.put("applicationDeadline", jobPost.getApplicationDeadline());
-        jobDetails.put("startDate", jobPost.getStartDate());
-        jobDetails.put("createdAt", jobPost.getCreatedAt());
-        jobDetails.put("updatedAt", jobPost.getUpdatedAt());
+        jobDetails.put("id", job.getId());
+        jobDetails.put("title", job.getTitle());
+        jobDetails.put("description", job.getDescription());
+        jobDetails.put("requirements", job.getRequirements());
+        jobDetails.put("jobType", job.getJobType());
+        jobDetails.put("location", job.getLocation());
+        jobDetails.put("salaryMin", job.getBudgetMin());
+        jobDetails.put("salaryMax", job.getBudgetMax());
+        jobDetails.put("currency", job.getCurrency());
+        jobDetails.put("status", job.getStatus());
+        jobDetails.put("isActive", job.getStatus() == Job.JobStatus.ACTIVE);
+        jobDetails.put("applicationDeadline", job.getApplicationDeadline());
+        jobDetails.put("startDate", job.getStartDate());
+        jobDetails.put("createdAt", job.getCreatedAt());
+        jobDetails.put("updatedAt", job.getUpdatedAt());
         jobDetails.put("applicationCount", applicationCount);
         jobDetails.put("viewCount", 0); // This would need to be tracked separately
         jobDetails.put("boostCount", 0); // This would need to be tracked separately
@@ -219,12 +220,12 @@ public class RecruiterDashboardService {
         RecruiterProfile recruiterProfile = recruiterProfileRepository.findByUserId(recruiter.getId())
                 .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
         
-        // Get job post
-        JobPost jobPost = jobPostRepository.findById(jobId)
+        // Get job
+        Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
         
         // Check if job belongs to recruiter
-        if (!jobPost.getRecruiter().getId().equals(recruiterProfile.getId())) {
+        if (!job.getRecruiter().getId().equals(recruiterProfile.getUser().getId())) {
             throw new RuntimeException("Access denied to this job");
         }
         
@@ -268,9 +269,9 @@ public class RecruiterDashboardService {
                                                           String experienceLevel, String availability,
                                                           Boolean isVerified, Boolean isPremium, Integer limit,
                                                           User recruiter) {
-        // Get job post if jobId is provided
-        final JobPost jobPost = jobId != null ? 
-                jobPostRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found")) : null;
+        // Get job if jobId is provided
+        final Job job = jobId != null ? 
+                jobRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found")) : null;
         
         // Get all artist profiles
         List<ArtistProfile> artistProfiles = artistProfileRepository.findAll();
@@ -281,11 +282,11 @@ public class RecruiterDashboardService {
                     ArtistSuggestionDto suggestion = convertToArtistSuggestionDto(profile);
                     
                     // Calculate match score based on criteria
-                    double matchScore = calculateMatchScore(profile, jobPost, artistCategory, artistType,
+                    double matchScore = calculateMatchScore(profile, job, artistCategory, artistType,
                             location, skills, genres, experienceLevel, availability, isVerified, isPremium);
                     
                     suggestion.setMatchScore(matchScore);
-                    suggestion.setMatchReasons(generateMatchReasons(profile, jobPost, artistCategory, artistType,
+                    suggestion.setMatchReasons(generateMatchReasons(profile, job, artistCategory, artistType,
                             location, skills, genres, experienceLevel, availability, isVerified, isPremium));
                     
                     return suggestion;
@@ -309,11 +310,11 @@ public class RecruiterDashboardService {
         RecruiterProfile recruiterProfile = recruiterProfileRepository.findByUserId(recruiter.getId())
                 .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
         
-        // Get job posts by recruiter
-        Page<JobPost> jobPosts = jobPostRepository.findByRecruiterId(recruiterProfile.getId(), pageable);
+        // Get jobs by recruiter
+        Page<Job> jobs = jobRepository.findByRecruiter(recruiterProfile.getUser(), pageable);
         
         // Convert to hires (this would need to be implemented with a proper hire tracking system)
-        return jobPosts.map(job -> {
+        return jobs.map(job -> {
             // This is a placeholder - would need actual hire tracking
             return RecentHireDto.builder()
                     .id(job.getId())
@@ -325,9 +326,9 @@ public class RecruiterDashboardService {
                     .artistCategory("Dancer")
                     .hireStatus("COMPLETED")
                     .hiredAt(job.getCreatedAt())
-                    .startDate(job.getStartDate())
-                    .endDate(job.getStartDate().plusDays(30))
-                    .agreedSalary(job.getSalaryMin())
+                    .startDate(job.getStartDate() != null ? job.getStartDate().atStartOfDay() : null)
+                    .endDate(job.getStartDate() != null ? job.getStartDate().plusDays(30).atStartOfDay() : null)
+                    .agreedSalary(job.getBudgetMin())
                     .currency(job.getCurrency())
                     .contractType("FULL_TIME")
                     .workLocation(job.getLocation())
@@ -415,20 +416,20 @@ public class RecruiterDashboardService {
         RecruiterProfile recruiterProfile = recruiterProfileRepository.findByUserId(recruiter.getId())
                 .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
         
-        // Get job post
-        JobPost jobPost = jobPostRepository.findById(jobId)
+        // Get job
+        Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
         
         // Check if job belongs to recruiter
-        if (!jobPost.getRecruiter().getId().equals(recruiterProfile.getId())) {
+        if (!job.getRecruiter().getId().equals(recruiterProfile.getUser().getId())) {
             throw new RuntimeException("Access denied to this job");
         }
         
         // Update status
-        jobPost.setStatus(JobPost.JobStatus.valueOf(status));
-        jobPost.setUpdatedAt(LocalDateTime.now());
+        job.setStatus(Job.JobStatus.valueOf(status));
+        job.setUpdatedAt(LocalDateTime.now());
         
-        JobPost savedJob = jobPostRepository.save(jobPost);
+        Job savedJob = jobRepository.save(job);
         
         Map<String, Object> result = new HashMap<>();
         result.put("jobId", savedJob.getId());
@@ -447,18 +448,18 @@ public class RecruiterDashboardService {
         RecruiterProfile recruiterProfile = recruiterProfileRepository.findByUserId(recruiter.getId())
                 .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
         
-        // Get job post
-        JobPost jobPost = jobPostRepository.findById(jobId)
+        // Get job
+        Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
         
         // Check if job belongs to recruiter
-        if (!jobPost.getRecruiter().getId().equals(recruiterProfile.getId())) {
+        if (!job.getRecruiter().getId().equals(recruiterProfile.getUser().getId())) {
             throw new RuntimeException("Access denied to this job");
         }
         
         // Boost job (this would need to be implemented with proper boost tracking)
         Map<String, Object> result = new HashMap<>();
-        result.put("jobId", jobPost.getId());
+        result.put("jobId", job.getId());
         result.put("boosted", true);
         result.put("boostDays", days != null ? days : 7);
         result.put("boostExpiresAt", LocalDateTime.now().plusDays(days != null ? days : 7));
@@ -473,13 +474,13 @@ public class RecruiterDashboardService {
         RecruiterProfile recruiterProfile = recruiterProfileRepository.findByUserId(recruiter.getId())
                 .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
         
-        // Get job posts by recruiter
-        List<JobPost> jobPosts = jobPostRepository.findByRecruiterId(recruiterProfile.getId(), Pageable.unpaged()).getContent();
+        // Get jobs by recruiter
+        List<Job> jobs = jobRepository.findByRecruiter(recruiterProfile.getUser());
         
         Map<String, Object> statistics = new HashMap<>();
-        statistics.put("totalJobsPosted", (long) jobPosts.size());
-        statistics.put("activeJobs", jobPosts.stream().filter(job -> job.getIsActive()).count());
-        statistics.put("closedJobs", jobPosts.stream().filter(job -> !job.getIsActive()).count());
+        statistics.put("totalJobsPosted", (long) jobs.size());
+        statistics.put("activeJobs", jobs.stream().filter(job -> job.getStatus() == Job.JobStatus.ACTIVE).count());
+        statistics.put("closedJobs", jobs.stream().filter(job -> job.getStatus() == Job.JobStatus.CLOSED).count());
         statistics.put("totalApplications", 0); // TODO: Calculate from JobApplication repository if needed
         statistics.put("totalHires", 0L); // This would need to be tracked separately
         statistics.put("totalViews", 0L); // This would need to be tracked separately
@@ -494,15 +495,14 @@ public class RecruiterDashboardService {
         RecruiterProfile recruiterProfile = recruiterProfileRepository.findByUserId(recruiter.getId())
                 .orElseThrow(() -> new RuntimeException("Recruiter profile not found"));
         
-        // Get recent job posts
-        List<JobPost> jobPosts = jobPostRepository.findByRecruiterId(recruiterProfile.getId(), Pageable.unpaged())
-                .getContent()
+        // Get recent jobs
+        List<Job> jobs = jobRepository.findByRecruiter(recruiterProfile.getUser())
                 .stream()
                 .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
                 .limit(limit)
                 .collect(Collectors.toList());
         
-        return jobPosts.stream()
+        return jobs.stream()
                 .map(this::convertToRecentJobDto)
                 .collect(Collectors.toList());
     }
@@ -517,21 +517,23 @@ public class RecruiterDashboardService {
         return new ArrayList<>();
     }
     
-    private RecentJobDto convertToRecentJobDto(JobPost jobPost) {
+    private RecentJobDto convertToRecentJobDto(Job job) {
         return RecentJobDto.builder()
-                .id(jobPost.getId())
-                .title(jobPost.getTitle())
-                .description(jobPost.getDescription())
-                .jobType(jobPost.getJobType().name())
-                .location(jobPost.getLocation())
-                .salaryMin(jobPost.getSalaryMin())
-                .salaryMax(jobPost.getSalaryMax())
-                .currency(jobPost.getCurrency())
-                .status(jobPost.getStatus().name())
-                .isActive(jobPost.getIsActive())
-                .applicationDeadline(jobPost.getApplicationDeadline())
-                .startDate(jobPost.getStartDate())
-                .createdAt(jobPost.getCreatedAt())
+                .id(job.getId())
+                .title(job.getTitle())
+                .description(job.getDescription())
+                .jobType(job.getJobType().name())
+                .location(job.getLocation())
+                .salaryMin(job.getBudgetMin())
+                .salaryMax(job.getBudgetMax())
+                .currency(job.getCurrency())
+                .status(job.getStatus().name())
+                .isActive(job.getStatus() == Job.JobStatus.ACTIVE)
+                .applicationDeadline(job.getApplicationDeadline() != null ? 
+                    job.getApplicationDeadline().atStartOfDay() : null)
+                .startDate(job.getStartDate() != null ? 
+                    job.getStartDate().atStartOfDay() : null)
+                .createdAt(job.getCreatedAt())
                 .applicationCount(0) // TODO: Calculate from JobApplication repository if needed
                 .viewCount(0) // This would need to be tracked separately
                 .boostCount(0) // This would need to be tracked separately
@@ -619,7 +621,7 @@ public class RecruiterDashboardService {
                 .build();
     }
     
-    private double calculateMatchScore(ArtistProfile profile, JobPost jobPost, String artistCategory,
+    private double calculateMatchScore(ArtistProfile profile, Job job, String artistCategory,
                                           String artistType, String location, String skills, String genres,
                                           String experienceLevel, String availability, Boolean isVerified,
                                           Boolean isPremium) {
@@ -627,7 +629,7 @@ public class RecruiterDashboardService {
         return Math.random(); // Placeholder
     }
     
-    private List<String> generateMatchReasons(ArtistProfile profile, JobPost jobPost, String artistCategory,
+    private List<String> generateMatchReasons(ArtistProfile profile, Job job, String artistCategory,
                                               String artistType, String location, String skills, String genres,
                                               String experienceLevel, String availability, Boolean isVerified,
                                               Boolean isPremium) {

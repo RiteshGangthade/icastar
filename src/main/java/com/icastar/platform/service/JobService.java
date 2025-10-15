@@ -3,6 +3,7 @@ package com.icastar.platform.service;
 import com.icastar.platform.dto.job.CreateJobDto;
 import com.icastar.platform.dto.job.JobDto;
 import com.icastar.platform.dto.job.JobFilterDto;
+import com.icastar.platform.dto.job.UpdateJobDto;
 import com.icastar.platform.entity.Job;
 import com.icastar.platform.entity.User;
 import com.icastar.platform.repository.JobRepository;
@@ -206,41 +207,78 @@ public class JobService {
         return jobRepository.save(job);
     }
 
-    public Job updateJob(Long jobId, CreateJobDto updateJobDto) {
+    public Job updateJob(Long jobId, UpdateJobDto updateJobDto) {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
-        job.setTitle(updateJobDto.getTitle());
-        job.setDescription(updateJobDto.getDescription());
-        job.setRequirements(updateJobDto.getRequirements());
-        job.setLocation(updateJobDto.getLocation());
-        job.setJobType(updateJobDto.getJobType());
-        job.setExperienceLevel(updateJobDto.getExperienceLevel());
-        job.setBudgetMin(updateJobDto.getBudgetMin());
-        job.setBudgetMax(updateJobDto.getBudgetMax());
-        job.setCurrency(updateJobDto.getCurrency());
-        job.setDurationDays(updateJobDto.getDurationDays());
-        job.setStartDate(updateJobDto.getStartDate());
-        job.setEndDate(updateJobDto.getEndDate());
-        job.setApplicationDeadline(updateJobDto.getApplicationDeadline());
-        job.setIsRemote(updateJobDto.getIsRemote());
-        job.setIsUrgent(updateJobDto.getIsUrgent());
-        job.setIsFeatured(updateJobDto.getIsFeatured());
-        job.setContactEmail(updateJobDto.getContactEmail());
-        job.setContactPhone(updateJobDto.getContactPhone());
-        job.setBenefits(updateJobDto.getBenefits());
+        // Only update fields that are not null
+        if (updateJobDto.getTitle() != null) {
+            job.setTitle(updateJobDto.getTitle());
+        }
+        if (updateJobDto.getDescription() != null) {
+            job.setDescription(updateJobDto.getDescription());
+        }
+        if (updateJobDto.getRequirements() != null) {
+            job.setRequirements(updateJobDto.getRequirements());
+        }
+        if (updateJobDto.getLocation() != null) {
+            job.setLocation(updateJobDto.getLocation());
+        }
+        if (updateJobDto.getJobType() != null) {
+            job.setJobType(updateJobDto.getJobType());
+        }
+        if (updateJobDto.getExperienceLevel() != null) {
+            job.setExperienceLevel(updateJobDto.getExperienceLevel());
+        }
+        if (updateJobDto.getBudgetMin() != null) {
+            job.setBudgetMin(updateJobDto.getBudgetMin());
+        }
+        if (updateJobDto.getBudgetMax() != null) {
+            job.setBudgetMax(updateJobDto.getBudgetMax());
+        }
+        if (updateJobDto.getCurrency() != null) {
+            job.setCurrency(updateJobDto.getCurrency());
+        }
+        if (updateJobDto.getDurationDays() != null) {
+            job.setDurationDays(updateJobDto.getDurationDays());
+        }
+        if (updateJobDto.getStartDate() != null) {
+            job.setStartDate(updateJobDto.getStartDate());
+        }
+        if (updateJobDto.getEndDate() != null) {
+            job.setEndDate(updateJobDto.getEndDate());
+        }
+        if (updateJobDto.getApplicationDeadline() != null) {
+            job.setApplicationDeadline(updateJobDto.getApplicationDeadline());
+        }
+        if (updateJobDto.getIsRemote() != null) {
+            job.setIsRemote(updateJobDto.getIsRemote());
+        }
+        if (updateJobDto.getIsUrgent() != null) {
+            job.setIsUrgent(updateJobDto.getIsUrgent());
+        }
+        if (updateJobDto.getIsFeatured() != null) {
+            job.setIsFeatured(updateJobDto.getIsFeatured());
+        }
+        if (updateJobDto.getContactEmail() != null) {
+            job.setContactEmail(updateJobDto.getContactEmail());
+        }
+        if (updateJobDto.getContactPhone() != null) {
+            job.setContactPhone(updateJobDto.getContactPhone());
+        }
+        if (updateJobDto.getBenefits() != null) {
+            job.setBenefits(updateJobDto.getBenefits());
+        }
+        if (updateJobDto.getStatus() != null) {
+            job.setStatus(updateJobDto.getStatus());
+        }
 
-        // Convert lists to JSON strings
-        try {
-            if (updateJobDto.getTags() != null) {
-                job.setTags(objectMapper.writeValueAsString(updateJobDto.getTags()));
-            }
-            if (updateJobDto.getSkillsRequired() != null) {
-                job.setSkillsRequired(objectMapper.writeValueAsString(updateJobDto.getSkillsRequired()));
-            }
-        } catch (JsonProcessingException e) {
-            log.error("Error converting lists to JSON", e);
-            throw new RuntimeException("Error processing job data");
+        // Update JSON fields if provided
+        if (updateJobDto.getTags() != null) {
+            job.setTags(updateJobDto.getTags());
+        }
+        if (updateJobDto.getSkillsRequired() != null) {
+            job.setSkillsRequired(updateJobDto.getSkillsRequired());
         }
 
         return jobRepository.save(job);
@@ -293,73 +331,12 @@ public class JobService {
         return jobRepository.countByStatus(status);
     }
 
-    // JobPost related methods (for compatibility with controllers)
-    public Job createJobPost(Long recruiterId, com.icastar.platform.dto.job.CreateJobPostDto createJobPostDto) {
-        // Convert CreateJobPostDto to CreateJobDto and delegate to existing method
-        CreateJobDto createJobDto = new CreateJobDto();
-        // Note: CreateJobPostDto doesn't have artistTypeId, using default or null
-        createJobDto.setTitle(createJobPostDto.getTitle());
-        createJobDto.setDescription(createJobPostDto.getDescription());
-        createJobDto.setLocation(createJobPostDto.getLocation());
-        createJobDto.setBudgetMin(createJobPostDto.getBudgetMin());
-        createJobDto.setBudgetMax(createJobPostDto.getBudgetMax());
-        createJobDto.setApplicationDeadline(createJobPostDto.getApplicationDeadline() != null ? 
-            createJobPostDto.getApplicationDeadline().toLocalDate() : null);
-        createJobDto.setSkillsRequired(createJobPostDto.getSkillsRequired());
-        createJobDto.setRequirements(createJobPostDto.getRequirements());
-        createJobDto.setIsRemote(createJobPostDto.getIsRemote());
-        
-        // Map jobType from JobPost.JobType to Job.JobType
-        if (createJobPostDto.getJobType() != null) {
-            createJobDto.setJobType(Job.JobType.valueOf(createJobPostDto.getJobType().name()));
-        }
-        
-        // Map experienceLevel from JobPost.ExperienceLevel to Job.ExperienceLevel
-        if (createJobPostDto.getExperienceLevel() != null) {
-            createJobDto.setExperienceLevel(mapExperienceLevel(createJobPostDto.getExperienceLevel()));
-        }
-        
-        // Note: CreateJobPostDto doesn't have experienceYearsMin/Max, using null
-        createJobDto.setIsFeatured(false); // Default value
-        
+    // Job management methods
+    public Job createJobPost(Long recruiterId, com.icastar.platform.dto.job.CreateJobDto createJobDto) {
         return createJob(recruiterId, createJobDto);
     }
     
-    /**
-     * Maps JobPost.ExperienceLevel to Job.ExperienceLevel
-     */
-    private Job.ExperienceLevel mapExperienceLevel(com.icastar.platform.entity.JobPost.ExperienceLevel jobPostLevel) {
-        switch (jobPostLevel) {
-            case ENTRY:
-                return Job.ExperienceLevel.ENTRY_LEVEL;
-            case JUNIOR:
-                return Job.ExperienceLevel.ENTRY_LEVEL; // Map JUNIOR to ENTRY_LEVEL
-            case MID:
-                return Job.ExperienceLevel.MID_LEVEL;
-            case SENIOR:
-                return Job.ExperienceLevel.SENIOR_LEVEL;
-            case EXPERT:
-                return Job.ExperienceLevel.EXPERT_LEVEL;
-            default:
-                return Job.ExperienceLevel.ENTRY_LEVEL;
-        }
-    }
-
-    public Job updateJobPost(Long jobId, Long recruiterId, com.icastar.platform.dto.job.UpdateJobPostDto updateJobPostDto) {
-        // Convert UpdateJobPostDto to CreateJobDto and delegate to existing method
-        CreateJobDto updateJobDto = new CreateJobDto();
-        // Note: UpdateJobPostDto doesn't have artistTypeId, using null
-        updateJobDto.setTitle(updateJobPostDto.getTitle());
-        updateJobDto.setDescription(updateJobPostDto.getDescription());
-        updateJobDto.setLocation(updateJobPostDto.getLocation());
-        updateJobDto.setBudgetMin(updateJobPostDto.getBudgetMin());
-        updateJobDto.setBudgetMax(updateJobPostDto.getBudgetMax());
-        updateJobDto.setApplicationDeadline(updateJobPostDto.getApplicationDeadline() != null ? 
-            updateJobPostDto.getApplicationDeadline().toLocalDate() : null);
-        updateJobDto.setSkillsRequired(updateJobPostDto.getSkillsRequired());
-        // Note: UpdateJobPostDto doesn't have experienceYearsMin/Max, using null
-        updateJobDto.setIsFeatured(false); // Default value
-        
+    public Job updateJobPost(Long jobId, Long recruiterId, com.icastar.platform.dto.job.UpdateJobDto updateJobDto) {
         return updateJob(jobId, updateJobDto);
     }
 

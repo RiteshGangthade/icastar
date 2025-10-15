@@ -4,7 +4,7 @@ import com.icastar.platform.dto.admin.JobFilterDto;
 import com.icastar.platform.dto.admin.JobManagementDto;
 import com.icastar.platform.dto.admin.JobVisibilityToggleDto;
 import com.icastar.platform.dto.job.JobDto;
-import com.icastar.platform.dto.job.UpdateJobPostDto;
+import com.icastar.platform.dto.job.UpdateJobDto;
 import com.icastar.platform.entity.Job;
 import com.icastar.platform.entity.User;
 import com.icastar.platform.service.AdminJobManagementService;
@@ -215,7 +215,7 @@ public class AdminJobManagementController {
 
     // Merged from AdminJobController
     @PutMapping("/{jobId}")
-    public ResponseEntity<Map<String, Object>> updateJobPost(@PathVariable Long jobId, @RequestBody UpdateJobPostDto updateDto) {
+    public ResponseEntity<Map<String, Object>> updateJobPost(@PathVariable Long jobId, @RequestBody UpdateJobDto updateDto) {
         log.info("Admin updating job post: {}", jobId);
         try {
             Job job = jobService.updateJobPost(jobId, null, updateDto);
