@@ -1,7 +1,7 @@
 package com.icastar.platform.repository;
 
-import com.icastar.platform.entity.BookmarkedJob;
 import com.icastar.platform.entity.ArtistProfile;
+import com.icastar.platform.entity.BookmarkedJob;
 import com.icastar.platform.entity.Job;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

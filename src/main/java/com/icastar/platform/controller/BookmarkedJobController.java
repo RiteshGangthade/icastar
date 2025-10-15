@@ -95,7 +95,13 @@ public class BookmarkedJobController {
             log.error("Error bookmarking job", e);
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
-            response.put("message", "Failed to bookmark job");
+            
+            // Provide better error message for duplicate bookmark
+            if (e.getMessage().contains("already bookmarked") || e.getMessage().contains("unique_bookmark")) {
+                response.put("message", "Job is already bookmarked");
+            } else {
+                response.put("message", "Failed to bookmark job");
+            }
             response.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
@@ -141,8 +147,9 @@ public class BookmarkedJobController {
                             boolean matchesJobTitle = jobTitle == null || 
                                     bookmark.getJob().getTitle().toLowerCase().contains(jobTitle.toLowerCase());
                             boolean matchesCompanyName = companyName == null || 
-                                    (bookmark.getJob().getRecruiter().getRecruiterProfile() != null && 
-                                     bookmark.getJob().getRecruiter().getRecruiterProfile().getCompanyName().toLowerCase().contains(companyName.toLowerCase()));
+                                    (bookmark.getJob().getRecruiter() != null && 
+                                     bookmark.getJob().getRecruiter().getEmail() != null &&
+                                     bookmark.getJob().getRecruiter().getEmail().toLowerCase().contains(companyName.toLowerCase()));
                             boolean matchesJobType = jobType == null || 
                                     bookmark.getJob().getJobType() == jobType;
                             boolean matchesLocation = location == null || 
@@ -174,8 +181,8 @@ public class BookmarkedJobController {
                         dto.setBudgetMax(bookmark.getJob().getBudgetMax());
                         dto.setCurrency(bookmark.getJob().getCurrency());
                         dto.setIsRemote(bookmark.getJob().getIsRemote());
-                        dto.setIsUrgent(bookmark.getJob().getIsUrgent());
-                        dto.setIsFeatured(bookmark.getJob().getIsFeatured());
+                        dto.setIsUrgent(false);
+                        dto.setIsFeatured(false);
                         dto.setStatus(bookmark.getJob().getStatus().toString());
                         dto.setApplicationsCount(bookmark.getJob().getApplicationsCount());
                         dto.setBookmarkedAt(bookmark.getBookmarkedAt());
@@ -235,8 +242,8 @@ public class BookmarkedJobController {
                         dto.setBudgetMax(bookmark.getJob().getBudgetMax());
                         dto.setCurrency(bookmark.getJob().getCurrency());
                         dto.setIsRemote(bookmark.getJob().getIsRemote());
-                        dto.setIsUrgent(bookmark.getJob().getIsUrgent());
-                        dto.setIsFeatured(bookmark.getJob().getIsFeatured());
+                        dto.setIsUrgent(false);
+                        dto.setIsFeatured(false);
                         dto.setStatus(bookmark.getJob().getStatus().toString());
                         dto.setApplicationsCount(bookmark.getJob().getApplicationsCount());
                         dto.setBookmarkedAt(bookmark.getBookmarkedAt());

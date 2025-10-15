@@ -88,15 +88,23 @@ public class BookmarkedJobService {
             throw new RuntimeException("Job is already bookmarked");
         }
 
-        BookmarkedJob bookmark = new BookmarkedJob();
-        bookmark.setArtist(artist);
-        bookmark.setJob(job);
-        bookmark.setBookmarkedAt(LocalDateTime.now());
-        bookmark.setNotes(createDto.getNotes());
+        try {
+            BookmarkedJob bookmark = new BookmarkedJob();
+            bookmark.setArtist(artist);
+            bookmark.setJob(job);
+            bookmark.setBookmarkedAt(LocalDateTime.now());
+            bookmark.setNotes(createDto.getNotes());
 
-        BookmarkedJob savedBookmark = bookmarkedJobRepository.save(bookmark);
-        log.info("Job bookmarked: {} bookmarked job {}", artist.getUser().getEmail(), job.getTitle());
-        return savedBookmark;
+            BookmarkedJob savedBookmark = bookmarkedJobRepository.save(bookmark);
+            log.info("Job bookmarked: {} bookmarked job {}", artist.getUser().getEmail(), job.getTitle());
+            return savedBookmark;
+        } catch (Exception e) {
+            // Handle duplicate constraint error
+            if (e.getMessage().contains("unique_bookmark") || e.getMessage().contains("Duplicate entry")) {
+                throw new RuntimeException("Job is already bookmarked");
+            }
+            throw e;
+        }
     }
 
     public BookmarkedJob updateBookmark(Long bookmarkId, CreateBookmarkDto updateDto) {
